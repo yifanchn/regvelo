@@ -12,7 +12,7 @@ setuptools.setup(
     description='a deep learning method for regulatory cellular dynamics',
     long_description=get_readme(),
     long_description_content_type="text/markdown",
-    url='https://github.com/LiQian-XC/sctour',
+    url='https://github.com/theislab/RegVelo',
     packages=setuptools.find_packages(),
     install_requires=[
         'torch>=1.9.1',
