@@ -446,7 +446,7 @@ class Trainer:
         self,
         T: np.ndarray,
         model: Optional[str] = None,
-        sim_dynamics: bool = True,
+        sim_dynamics: bool = False,
     ) -> np.ndarray:
         """
         Get the vector field.
@@ -476,7 +476,7 @@ class Trainer:
         #index = torch.argsort(T)
         #T = T[index]
         #Z = Z[index]
-        
+
         #if self.time_reverse is None:
         #    raise RuntimeError('It seems you did not run get_time() function first. Please run get_time() before you run get_vector_field().')
         #direction = 1
@@ -485,30 +485,32 @@ class Trainer:
         velo = model.lode_func(T, Z).cpu().detach().numpy()
 
         if sim_dynamics:
-            id = adata.obs.index.values
+            id = self.adata.obs.index.values
             ## simulate the system to generate the dynamics of all cells
             T = T.ravel()  ## odeint requires 1-D Tensor for time
             index = torch.argsort(T)
             T = T[index]
             Z = Z[index]
-            id = id[index]
+            id = id[index.cpu().numpy()]
             index2 = (T[:-1] != T[1:])
             index2 = torch.cat((index2, torch.tensor([True]).to(index2.device))) ## index2 is used to get unique time points as odeint requires strictly increasing/decreasing time points
             T = T[index2]   
             Z = Z[index2]
-            id = id[index2]
+            id = id[index2.cpu().numpy()]
 
             ## generate dynamics through ODE solver
             Z0 = Z[0]
             options = get_step_size(model.step_size, T[0], T[-1], len(T))
-            pred_x = odeint(model.lode_func, Z0.to(model.device), T.to(model.device), method = model.ode_method, options = options).view(-1, model.n_int)
-            pred_x = pred_x.to(model.device)
-            
+            pred_x = odeint(model.lode_func, Z0.to(model.device), T.to(model.device), method = model.ode_method).view(-1, model.n_int)
+            pred_x = pred_x.to(Z.device)
+            logging.info("dimension of pred_x "+str(pred_x.shape))
+            new_velo = model.lode_func(T, pred_x).cpu().detach().numpy()
+
             ## insert into the velocity matrix
             insert = [adata.obs.index.tolist().index(i) for i in id]
-            for i in insert:
-                velo[i,:] = pred_x[i,:]
-        
+            for i,item in enumerate(insert):
+                velo[item,:] = new_velo[i,:]
+
         return velo
 
     def save_model(
