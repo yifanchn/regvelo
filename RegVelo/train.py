@@ -10,6 +10,7 @@ from scipy.sparse import spmatrix
 from tqdm import tqdm
 import os
 from collections import defaultdict
+from scipy.spatial.distance import cdist
 
 from .model import TNODE
 from ._utils import get_step_size, _softplus_inverse
@@ -120,18 +121,25 @@ class Trainer:
         step_size: Optional[int] = None,
         alpha_recon_lec: float = 0.5,
         alpha_recon_lode: float = 0.5,
+        alpha_z_div: float = 1.,
         alpha_kl: float = 1.,
         loss_mode: Literal['mse', 'nb', 'zinb'] = 'mse',
         nepoch: Optional[int] = None,
         batch_size: int = 1024,
         drop_last: bool = False,
+        solver: str = "RMSprop",
         lr: float = 1e-3,
+        momentum: float = 0.9,
+        scheduler_lr: bool = True,
+        scheduler: str = "Cosine",
+        T_max: int = 100,
         wt_decay: float = 1e-6,
         eps: float = 0.01,
         random_state: int = 0,
         val_frac: float = 0.1,
         use_gpu: bool = True,
         W: torch.Tensor = None,
+        corr_int: bool = True,
         ratio: float = 0.8,
         early_stopping: bool = True,
         patience: int = 45,
@@ -185,7 +193,12 @@ class Trainer:
         else:
             self.nepoch = nepoch
 
+        self.solver = solver
+        self.scheduler_lr = scheduler_lr
+        self.scheduler_model = scheduler
+        self.T_max = T_max
         self.lr = lr
+        self.momentum = momentum
         self.wt_decay = wt_decay
         self.eps = eps
         self.time_reverse = None
@@ -223,6 +236,14 @@ class Trainer:
         else:
             self.device = torch.device('cpu')
         self.n_int = adata.n_vars*2
+
+        ## initialization
+        if corr_int:
+            corr_m = 1 - cdist(self.adata.X.todense().T, self.adata.X.todense().T, metric='correlation')
+            corr_m = torch.tensor(corr_m).to(self.device)
+        else:
+            corr_m = None
+
         self.model_kwargs = dict(
             device = self.device,
             n_int = self.n_int,
@@ -234,9 +255,11 @@ class Trainer:
             step_size = step_size,
             alpha_recon_lec = alpha_recon_lec,
             alpha_recon_lode = alpha_recon_lode,
+            alpha_z_div = alpha_z_div,
             alpha_kl = alpha_kl,
             loss_mode = loss_mode,
             W = W,
+            corr_m = corr_m,
             alpha_unconstr_init = alpha_unconstr_init,
             ratio = ratio,
         )
@@ -263,19 +286,40 @@ class Trainer:
         self._get_data_loaders()
 
         params = filter(lambda p: p.requires_grad, self.model.parameters())
-        self.optimizer = torch.optim.Adam(params, lr = self.lr, weight_decay = self.wt_decay, eps = self.eps)
+        if self.solver == "AdamW":
+            self.optimizer = torch.optim.AdamW(params, lr = self.lr, weight_decay = self.wt_decay, eps = self.eps)
+        if self.solver == "Adam":
+            self.optimizer = torch.optim.Adam(params, lr = self.lr, weight_decay = self.wt_decay, eps = self.eps)
+        ## Don't use ADAM but try RMSprop
+        if self.solver == "RMSprop":
+            self.optimizer = torch.optim.RMSprop(params, lr=self.lr, momentum=self.momentum)
+        if self.scheduler_lr:
+            if self.scheduler_model == "Cosine":
+                self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=self.T_max, eta_min=0, last_epoch=-1, verbose=False)
+            if self.scheduler_model == "CyclicLR":
+                self.scheduler = torch.optim.lr_scheduler.CyclicLR(self.optimizer, base_lr=self.lr*0.1, max_lr=self.lr, mode='triangular', gamma=1.0,cycle_momentum=False)
 
         if self.early_stopping:
             early_stopper = EarlyStopper(patience = self.patience, min_delta = self.min_delta)
         with tqdm(total=self.nepoch, unit='epoch') as t:
             for tepoch in range(t.total):
-                train_loss = self._on_epoch_train(self.train_dl)
-                val_loss = self._on_epoch_val(self.val_dl)
+                if self.scheduler_lr:
+                    self.scheduler.step()
+                train_loss, train_recon_loss_ec, train_recon_loss_ode, train_kl_div, train_z_div = self._on_epoch_train(self.train_dl)
+                val_loss, val_recon_loss_ec, val_recon_loss_ode, val_kl_div, val_z_div = self._on_epoch_val(self.val_dl)
                 if self.early_stopping:
                     if early_stopper.early_stop(val_loss):             
                         break
                 self.log['train_loss'].append(train_loss)
                 self.log['validation_loss'].append(val_loss)
+                self.log['train_recon_loss_ec'].append(train_recon_loss_ec)
+                self.log['val_recon_loss_ec'].append(val_recon_loss_ec)
+                self.log['train_recon_loss_ode'].append(train_recon_loss_ode)
+                self.log['val_recon_loss_ode'].append(val_recon_loss_ode)
+                self.log['train_kl_div'].append(train_kl_div)
+                self.log['val_kl_div'].append(val_kl_div)
+                self.log['train_z_div'].append(train_z_div)
+                self.log['val_z_div'].append(val_z_div)
                 t.set_description(f"Epoch {tepoch + 1}")
                 t.set_postfix({'train_loss': train_loss, 'val_loss': val_loss}, refresh=False)
                 t.update()
@@ -297,7 +341,7 @@ class Trainer:
         """
 
         self.model.train()
-        total_loss = .0
+        total_loss = total_recon_loss_ec = total_recon_loss_ode = total_kl_div = total_z_div = .0
         ss = 0
         for X, Y in DL:
             self.optimizer.zero_grad()
@@ -308,10 +352,19 @@ class Trainer:
             self.optimizer.step()
 
             total_loss += loss.item() * X.size(0)
+            total_recon_loss_ec += recon_loss_ec.item() * X.size(0)
+            total_recon_loss_ode += recon_loss_ode.item() * X.size(0)
+            total_kl_div += kl_div.item() * X.size(0)
+            total_z_div += z_div.item() * X.size(0)
+
             ss += X.size(0)
 
         train_loss = total_loss/ss
-        return train_loss
+        train_recon_loss_ec = total_recon_loss_ec/ss
+        train_recon_loss_ode = total_recon_loss_ode/ss
+        train_kl_div = total_kl_div/ss
+        train_z_div = total_z_div/ss
+        return train_loss, train_recon_loss_ec, train_recon_loss_ode, train_kl_div, train_z_div
 
 
     @torch.no_grad()
@@ -331,7 +384,7 @@ class Trainer:
         """
 
         self.model.eval()
-        total_loss = .0
+        total_loss = total_recon_loss_ec = total_recon_loss_ode = total_kl_div = total_z_div = .0
         ss = 0
         for X, Y in DL:
             X = X.to(self.device)
@@ -340,8 +393,17 @@ class Trainer:
             total_loss += loss.item() * X.size(0)
             ss += X.size(0)
 
+            total_recon_loss_ec += recon_loss_ec.item() * X.size(0)
+            total_recon_loss_ode += recon_loss_ode.item() * X.size(0)
+            total_kl_div += kl_div.item() * X.size(0)
+            total_z_div += z_div.item() * X.size(0)
+
         val_loss = total_loss/ss
-        return val_loss
+        val_recon_loss_ec = total_recon_loss_ec/ss
+        val_recon_loss_ode = total_recon_loss_ode/ss
+        val_kl_div = total_kl_div/ss
+        val_z_div = total_z_div/ss
+        return val_loss, val_recon_loss_ec, val_recon_loss_ode, val_kl_div, val_z_div
 
 
     @torch.no_grad()
@@ -476,6 +538,7 @@ class Trainer:
                 'percent': self.percent,
                 'time_reverse': self.time_reverse,
                 'model_kwargs': self.model_kwargs,
+                'log': self.log,
             },
             save_path
         )

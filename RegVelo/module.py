@@ -4,6 +4,8 @@ from typing_extensions import Literal
 import torch.nn.functional as F
 from typing import Optional
 import numpy as np
+from scipy.spatial.distance import cdist
+from scvi.nn import Encoder, FCLayers
 
 class DecoderODEfunc(nn.Module):
     """
@@ -23,6 +25,7 @@ class DecoderODEfunc(nn.Module):
         n_int: int = 5,
         alpha_unconstr_init: Optional[np.ndarray] = None,
         W: torch.Tensor = (torch.FloatTensor(5, 5).uniform_() > 0.5).int(),
+        W_int: torch.Tensor = None,
     ):
         super().__init__()
         self.relu = nn.ReLU()
@@ -30,6 +33,7 @@ class DecoderODEfunc(nn.Module):
         self.mask_m = W
         self.n_int =  n_int
         self.alpha_unconstr_init = alpha_unconstr_init
+        self.W_int = W_int
 
         ## define the trainable gamma parameter
         self.beta_mean_unconstr = torch.nn.Parameter(0.5 * torch.ones(n_int))
@@ -56,7 +60,14 @@ class DecoderODEfunc(nn.Module):
             self.fc1.weight.data = int_m
         else:
             self.mask_m = self.mask_m.to(self.fc1.weight.device)
-            int_m = self.fc1.weight.data.normal_() * 0
+            
+            ## analysis the correlation
+            if self.W_int is None:
+                int_m = self.fc1.weight.data.normal_() * 0
+            else:
+                int_m = self.W_int * self.mask_m
+                int_m = int_m.to(torch.float32)
+            int_m[int_m==0] = torch.abs(int_m[int_m==0])
             self.fc1.weight.data = int_m
             self.fc1.bias.data = torch.nn.Parameter(
                 torch.from_numpy(self.alpha_unconstr_init).to(self.fc1.weight.device)
@@ -90,8 +101,8 @@ class DecoderODEfunc(nn.Module):
         ## generate kinetic rate
         beta = torch.clamp(F.softplus(self.beta_mean_unconstr), 0, 50)
         gamma = torch.clamp(F.softplus(self.gamma_mean_unconstr), 0, 50)
-        alpha_unconstr = self.fc1(u)
-        alpha_unconstr = self.relu(alpha_unconstr)
+        alpha_unconstr = self.fc1(s)
+        #alpha_unconstr = self.relu(alpha_unconstr)
         alpha = torch.clamp(F.softplus(alpha_unconstr),0,50)
 
         ## predict the gradient
@@ -106,7 +117,7 @@ class DecoderODEfunc(nn.Module):
         return out
 
 
-class Encoder(nn.Module):
+class LatentEncoder(nn.Module):
     """
     Encoder class generating the time and latent space.
     Parameters
@@ -140,20 +151,31 @@ class Encoder(nn.Module):
     ):
         super().__init__()
         self.n_latent = n_latent
-        self.fc = nn.Sequential()
-        self.fc.add_module('L1', nn.Linear(n_int, n_hidden))
-        if batch_norm:
-            self.fc.add_module('N1', nn.BatchNorm1d(n_hidden))
-        self.fc.add_module('A1', nn.ReLU())
-        self.fc2 = nn.Linear(n_hidden, n_latent*2)
+        #self.fc = nn.Sequential()
+        #self.fc.add_module('L1', nn.Linear(n_int, n_hidden))
+        #if batch_norm:
+        #    self.fc.add_module('N1', nn.BatchNorm1d(n_hidden))
+        #self.fc.add_module('A1', nn.ReLU())
+        #self.fc2 = nn.Linear(n_hidden, n_latent*2)
         #self.fc3 = nn.Linear(n_hidden, 1)
+        self.z_encoder = Encoder(
+            n_input = n_int,
+            n_output = n_latent,
+            n_hidden = n_hidden,
+            use_batch_norm = "both",
+            use_layer_norm = "both",
+            activation_fn=torch.nn.ReLU,
+        )
 
     def forward(self, x:torch.Tensor) -> tuple:
-        x = self.fc(x)
-        out = self.fc2(x)
-        qz_mean, qz_logvar = out[:, :self.n_latent], out[:, self.n_latent:]
+        #x = self.fc(x)
+        #out = self.fc2(x)
+        #qz_mean, qz_logvar = out[:, :self.n_latent], out[:, self.n_latent:]
         #t = self.fc3(x).sigmoid() * 20
         #t = torch.clamp(F.softplus(self.fc3(x)),0,20)
+        q = self.z_encoder.encoder(x)
+        qz_mean = self.z_encoder.mean_encoder(q)
+        qz_logvar = self.z_encoder.var_encoder(q)
         return qz_mean, qz_logvar
 
 
@@ -189,27 +211,36 @@ class Decoder(nn.Module):
     ):
         super().__init__()
         self.loss_mode = loss_mode
-        if loss_mode in ['nb', 'zinb']:
-            self.disp = nn.Parameter(torch.randn(n_int))
+        #if loss_mode in ['nb', 'zinb']:
+        #    self.disp = nn.Parameter(torch.randn(n_int))
 
-        self.fc = nn.Sequential()
-        self.fc.add_module('L1', nn.Linear(n_latent, n_hidden))
-        if batch_norm:
-            self.fc.add_module('N1', nn.BatchNorm1d(n_hidden))
-        self.fc.add_module('A1', nn.ReLU())
-
-        if loss_mode == 'mse':
-            self.fc2 = nn.Linear(n_hidden, n_int)
-        if loss_mode in ['nb', 'zinb']:
-            self.fc2 = nn.Sequential(nn.Linear(n_hidden, n_int), nn.Softmax(dim = -1))
-        if loss_mode == 'zinb':
-            self.fc3 = nn.Linear(n_hidden, n_int)
+        #self.fc = nn.Sequential()
+        #self.fc.add_module('L1', nn.Linear(n_latent, n_hidden))
+        #if batch_norm:
+        #    self.fc.add_module('N1', nn.BatchNorm1d(n_hidden))
+        #self.fc.add_module('A1', nn.ReLU())
+        self.Decoder = FCLayers(
+            n_in = n_latent,
+            n_out = n_int,
+            n_hidden = n_hidden,
+            use_batch_norm = "both",
+            use_layer_norm = "both",
+            activation_fn=torch.nn.ReLU,
+        )
+        #if loss_mode == 'mse':
+        #    self.fc2 = nn.Linear(n_hidden, n_int)
+        #if loss_mode in ['nb', 'zinb']:
+        #    self.fc2 = nn.Sequential(nn.Linear(n_hidden, n_int), nn.Softmax(dim = -1))
+        #if loss_mode == 'zinb':
+        #    self.fc3 = nn.Linear(n_hidden, n_int)
 
     def forward(self, z: torch.Tensor):
-        out = self.fc(z)
-        recon_x = self.fc2(out)
-        if self.loss_mode == 'zinb':
-            disp = self.fc3(out)
-            return recon_x, disp
-        else:
-            return recon_x
+        #out = self.fc(z)
+        #recon_x = self.fc2(out)
+        #if self.loss_mode == 'zinb':
+        #    disp = self.fc3(out)
+        #    return recon_x, disp
+        #else:
+        #    return recon_x
+        recon_x = self.Decoder(z)
+        return recon_x

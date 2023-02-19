@@ -6,7 +6,7 @@ from torchdiffeq import odeint
 from typing import Optional
 from typing_extensions import Literal
 import numpy as np
-from .module import DecoderODEfunc, Encoder, Decoder
+from .module import DecoderODEfunc, LatentEncoder, Decoder
 from ._utils import get_step_size, normal_kl, log_zinb, log_nb
 from torch.distributions import Normal
 
@@ -63,9 +63,11 @@ class TNODE(nn.Module):
         step_size: Optional[int] = None,
         alpha_recon_lec: float = 0.5,
         alpha_recon_lode: float = 0.5,
+        alpha_z_div: float = 1.,
         alpha_kl: float = 1.,
         loss_mode: Literal['mse', 'nb', 'zinb'] = 'mse',
         W: torch.Tensor = None,
+        corr_m: torch.Tensor = None,
         alpha_unconstr_init: Optional[np.ndarray] = None,
         ratio: float = 0.8,
     ):
@@ -79,6 +81,7 @@ class TNODE(nn.Module):
         self.step_size = step_size
         self.alpha_recon_lec = alpha_recon_lec
         self.alpha_recon_lode = alpha_recon_lode
+        self.alpha_z_div = alpha_z_div
         self.alpha_kl = alpha_kl
         self.loss_mode = loss_mode
         self.device = device
@@ -87,12 +90,12 @@ class TNODE(nn.Module):
         else:
             W = W.to(device)
 
-        self.lode_func = DecoderODEfunc(int(n_int/2), alpha_unconstr_init = alpha_unconstr_init, W = W).to(self.device)
+        self.lode_func = DecoderODEfunc(int(n_int/2), alpha_unconstr_init = alpha_unconstr_init, W = W, W_int = corr_m).to(self.device)
         ## mask the neural network
         self.lode_func._set_mask_grad()
         self.lode_func._set_mask_initialize()
 
-        self.encoder = Encoder(n_int, n_latent, n_vae_hidden, batch_norm).to(self.device)
+        self.encoder = LatentEncoder(n_int, n_latent, n_vae_hidden, batch_norm).to(self.device)
         self.decoder = Decoder(n_int, n_latent, n_vae_hidden, batch_norm, loss_mode).to(self.device)
         self.t_encoder = nn.Linear(n_latent, 1).to(self.device)
 
@@ -126,7 +129,7 @@ class TNODE(nn.Module):
         epsilon = torch.randn(qz_mean.size()).to(self.device)
         z = epsilon * torch.exp(.5 * qz_logvar) + qz_mean
         #z = dist.rsample()
-        T = self.t_encoder(z).sigmoid() * 20
+        T = self.t_encoder(qz_mean).sigmoid() * 20
 
         T = T.ravel()  ## odeint requires 1-D Tensor for time
         index = torch.argsort(T)
@@ -189,6 +192,10 @@ class TNODE(nn.Module):
         pz_logvar = torch.zeros_like(qz_mean)
         kl_div = normal_kl(qz_mean, qz_logvar, pz_mean, pz_logvar).sum(-1).mean()
 
-        loss = self.alpha_recon_lec * recon_loss_ec + self.alpha_recon_lode * recon_loss_ode + z_div + self.alpha_kl * kl_div
+        ## adding L2 loss to regularize the FC1 layer
+        L2_loss = sum(torch.linalg.norm(p.flatten(), 2) for p in self.lode_func.fc1.parameters())
+
+        loss = self.alpha_recon_lec * recon_loss_ec + self.alpha_recon_lode * recon_loss_ode + self.alpha_z_div * z_div + self.alpha_kl * kl_div
+        #loss = recon_loss_ode + self.alpha_kl * kl_div
 
         return loss, recon_loss_ec, recon_loss_ode, kl_div, z_div
