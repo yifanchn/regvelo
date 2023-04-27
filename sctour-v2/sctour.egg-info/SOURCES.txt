@@ -1,0 +1,17 @@
+LICENSE
+MANIFEST.in
+README.md
+setup.py
+sctour/__init__.py
+sctour/_utils.py
+sctour/data.py
+sctour/logger.py
+sctour/model.py
+sctour/module.py
+sctour/train.py
+sctour/vector_field.py
+sctour.egg-info/PKG-INFO
+sctour.egg-info/SOURCES.txt
+sctour.egg-info/dependency_links.txt
+sctour.egg-info/requires.txt
+sctour.egg-info/top_level.txt
