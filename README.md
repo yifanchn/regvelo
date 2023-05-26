@@ -5,21 +5,30 @@ inferring regulatory cellular dynamics
 
 ```
 git clone 
-cd ./RegVelo
+cd ./RegVelo-global
 pip install .
 ```
 
 # use RegVelo
 ```
-import RegVelo as rgv
-```
-1. build a RegVelo model and training the model
-```
-rgv_m = rgv.train.Trainer(adata, loss_mode='mse',W=W.T, early_stopping = False, nepoch = 400, n_latent = 20)
-rgv_m.train()
-```
-2. get latent time and velocity vector
-```
-adata.obs["ptime"] = rgv_m.get_time()
-velocity = rgv_m.get_vector_field(T=adata.obs['ptime'].values)[:,int(rgv_m.n_int/2):rgv_m.n_int]
+## reg_adata needs to contain the "regulators","targets","skeleton" and "network" instance in 'uns'
+## assume we have no prior knowledge of the network, then we could set all one skeleton matrix
+reg_adata.uns["regulators"] = reg_adata.var.index.values
+reg_adata.uns["targets"] = reg_adata.var.index.values
+reg_adata.uns["skeleton"] = np.ones((len(reg_adata.var.index),len(reg_adata.var.index)))
+reg_adata.uns["network"] = np.ones((len(reg_adata.var.index),len(reg_adata.var.index)))
+
+# skeleton
+W = reg_adata.uns["skeleton"].copy()
+W = torch.tensor(np.array(W)).int()
+##
+
+from regvelovi import preprocess_data,organize_multiview_anndata,sanity_check
+reg_adata = sanity_check(reg_adata,network_mode = "GENIE3")
+rgv_adata = organize_multiview_anndata(reg_adata) ## merge 'spliced', 'unspliced' and 'accessibility'(alternative) layer into one layer 'readout'
+REGVELOVI.setup_anndata(rgv_adata, readout_layer = "readout")
+
+## lam represents the GRN L1 penalty coefficients
+reg_vae = REGVELOVI(rgv_adata,W=W.T,lam=1,interpolator = "GP",velocity_mode = "global",SVD_transform = False)
+reg_vae.train(max_epochs=800,lr=0.01,optimizer = "AdamW",weight_decay = 1e-5,early_stopping = False)
 ```
