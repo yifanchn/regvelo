@@ -1,34 +1,69 @@
-# RegVelo
-inferring regulatory cellular dynamics
+# velovi
 
-# installation
+[![Tests][badge-tests]][link-tests]
+[![Documentation][badge-docs]][link-docs]
+
+[badge-tests]: https://img.shields.io/github/actions/workflow/status/yoseflab/velovi/test.yml?branch=main
+[link-tests]: https://github.com/yoseflab/velovi/actions/workflows/test.yml
+[badge-docs]: https://img.shields.io/readthedocs/velovi
+
+Variational inference for RNA velocity. This is an experimental repo for the veloVI model. Installation instructions and tutorials are in the docs. Over the next few months veloVI will move into [scvelo](https://scvelo.org/).
+
+## Getting started
+
+Please refer to the [documentation][link-docs].
+
+## Installation
+
+You need to have Python 3.8 or newer installed on your system. If you don't have
+Python installed, we recommend installing [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
+
+There are several alternative options to install velovi:
+
+<!--
+1) Install the latest release of `velovi` from `PyPI <https://pypi.org/project/velovi/>`_:
+
+```bash
+pip install velovi
+```
+-->
+
+1. Install the latest release on PyPI:
+
+```bash
+pip install velovi
+```
+
+2. Install the latest development version:
+
+```bash
+pip install git+https://github.com/yoseflab/velovi.git@main
+```
+
+## Release notes
+
+See the [changelog][changelog].
+
+## Contact
+
+For questions and help requests, you can reach out in the [scverse discourse][scverse-discourse].
+If you found a bug, please use the [issue tracker][issue-tracker].
+
+## Citation
 
 ```
-git clone 
-cd ./RegVelo-global
-pip install .
+@article{gayoso2022deep,
+  title={Deep generative modeling of transcriptional dynamics for RNA velocity analysis in single cells},
+  author={Gayoso, Adam and Weiler, Philipp and Lotfollahi, Mohammad and Klein, Dominik and Hong, Justin and Streets, Aaron M and Theis, Fabian J and Yosef, Nir},
+  journal={bioRxiv},
+  pages={2022--08},
+  year={2022},
+  publisher={Cold Spring Harbor Laboratory}
+}
 ```
 
-# use RegVelo
-```
-## reg_adata needs to contain the "regulators","targets","skeleton" and "network" instance in 'uns'
-## assume we have no prior knowledge of the network, then we could set all one skeleton matrix
-reg_adata.uns["regulators"] = reg_adata.var.index.values
-reg_adata.uns["targets"] = reg_adata.var.index.values
-reg_adata.uns["skeleton"] = np.ones((len(reg_adata.var.index),len(reg_adata.var.index)))
-reg_adata.uns["network"] = np.ones((len(reg_adata.var.index),len(reg_adata.var.index)))
-
-# skeleton
-W = reg_adata.uns["skeleton"].copy()
-W = torch.tensor(np.array(W)).int()
-##
-
-from regvelovi import preprocess_data,organize_multiview_anndata,sanity_check
-reg_adata = sanity_check(reg_adata,network_mode = "GENIE3")
-rgv_adata = organize_multiview_anndata(reg_adata) ## merge 'spliced', 'unspliced' and 'accessibility'(alternative) layer into one layer 'readout'
-REGVELOVI.setup_anndata(rgv_adata, readout_layer = "readout")
-
-## lam represents the GRN L1 penalty coefficients
-reg_vae = REGVELOVI(rgv_adata,W=W.T,lam=1,interpolator = "GP",velocity_mode = "global",SVD_transform = False)
-reg_vae.train(max_epochs=800,lr=0.01,optimizer = "AdamW",weight_decay = 1e-5,early_stopping = False)
-```
+[scverse-discourse]: https://discourse.scverse.org/
+[issue-tracker]: https://github.com/yoseflab/velovi/issues
+[changelog]: https://velovi.readthedocs.io/latest/changelog.html
+[link-docs]: https://velovi.readthedocs.io
+[link-api]: https://velovi.readthedocs.io/latest/api.html
