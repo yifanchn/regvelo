@@ -11,7 +11,7 @@ You need to have Python 3.8 or newer installed on your system. If you don't have
 Python installed, we recommend installing [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
 
 ```bash
-pip install git+https://github.com/yoseflab/velovi.git@main
+pip install git+https://github.com/theislab/RegVelo.git@main
 ```
 
 
