@@ -1,12 +1,4 @@
 # RegVelo
-
-[![Tests][badge-tests]][link-tests]
-[![Documentation][badge-docs]][link-docs]
-
-[badge-tests]: https://img.shields.io/github/actions/workflow/status/yoseflab/velovi/test.yml?branch=main
-[link-tests]: https://github.com/yoseflab/velovi/actions/workflows/test.yml
-[badge-docs]: https://img.shields.io/readthedocs/velovi
-
 inferring regulatory cellular dynamics
 
 ## Getting started
