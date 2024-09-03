@@ -23,8 +23,8 @@ pip install git+https://github.com/theislab/RegVelo_repo.git@main
 ```
 
 
-[scverse-discourse]: https://discourse.scverse.org/
-[issue-tracker]: https://github.com/yoseflab/velovi/issues
-[changelog]: https://velovi.readthedocs.io/latest/changelog.html
-[link-docs]: https://velovi.readthedocs.io
-[link-api]: https://velovi.readthedocs.io/latest/api.html
+#[scverse-discourse]: https://discourse.scverse.org/
+#[issue-tracker]: https://github.com/yoseflab/velovi/issues
+#[changelog]: https://velovi.readthedocs.io/latest/changelog.html
+#[link-docs]: https://velovi.readthedocs.io
+#[link-api]: https://velovi.readthedocs.io/latest/api.html
