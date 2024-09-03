@@ -4,7 +4,7 @@ inferring regulatory cellular dynamics
 
 ## Getting started
 
-Please refer to the [documentation][link-docs].
+Please refer to the [Tutorial](https://github.com/theislab/RegVelo_repo/blob/main/docs/tutorial.ipynb).
 
 ## Installation
 
