@@ -3,7 +3,6 @@ from typing import Callable, Iterable, Literal, Optional, Any
 
 import numpy as np
 import torch
-from torchsort import soft_rank
 import torch.nn.functional as F
 from scvi.module.base import BaseModuleClass, LossOutput, auto_move_data
 from scvi.nn import Encoder, FCLayers
@@ -134,12 +133,18 @@ class DecoderVELOVI(nn.Module):
 
 ## define a new class velocity encoder
 class velocity_encoder(nn.Module):
-    """ 
-    encode the velocity
-    time dependent transcription rate is determined by upstream emulator
-    velocity could be build on top of this
+    """Encode the velocity
 
-    merge velocity encoder and emulator class
+    time dependent transcription rate is determined by upstream regulator, velocity could be build on top of this
+
+    Parameters
+    ----------
+    activate
+        activate function used for modeling transcription rate
+    bas_alpha
+        adding base transcription rate
+    n_int
+        number of genes
     """                 
     def __init__(
         self,
@@ -153,9 +158,6 @@ class velocity_encoder(nn.Module):
         self.activate = activate
         self.base_alpha = base_alpha
         
-        ## initialize logic gate multivariate bernoulli distribution
-        ## using hook to mask the gradients
-        ### define hook to froze the parameters
     def _set_mask_grad(self):
         self.hooks = []
  
@@ -262,10 +264,12 @@ class velocity_encoder(nn.Module):
         return du,ds
 
 class v_encoder_batch(nn.Module):
-    """
-    batch the velocity
-    don't need to sort the matrix
-    jointly solve the results
+    """Batching the velocity
+
+    Parameters
+    ----------
+    num_g
+        number of genes
     """
     
     def __init__(
@@ -302,20 +306,38 @@ class v_encoder_batch(nn.Module):
 class VELOVAE(BaseModuleClass):
     """Variational auto-encoder model.
 
-    This is an implementation of the veloVI model descibed in :cite:p:`GayosoWeiler2022`
+    This is an implementation of the RegVelo model.
 
     Parameters
     ----------
     n_input
-        Number of input genes
-    n_hidden
-        Number of nodes per hidden layer
+        Number of input genes.
+    regulator_index
+        list index for all regulators.
+    target_index
+        list index for all targets.
+    skeleton
+        prior gene regulatory graph.
     regulator_list
-        a integer list represents where is the regulators
+        a integer list represents where is the regulators.
+    activate
+        Activation function used for modeling transcription rate.
+    base_alpha
+        Adding base transcription rate.
+    n_hidden
+        Number of nodes per hidden layer.
     n_latent
-        Dimensionality of the latent space
+        Dimensionality of the latent space.
     n_layers
-        Number of hidden layers used for encoder and decoder NNs
+        Number of hidden layers used for encoder and decoder NNs.
+    lam
+        Regularization parameter for controling the strengths of adding prior knowledge.
+    lam2
+        Regularization parameter for controling the strengths of L1 regularization to the Jacobian matrix.
+    vector_constraint
+        Regularization on velocity.
+    bias_constraint
+        Regularization on bias term (base transcription rate).
     dropout_rate
         Dropout rate for neural networks
     log_variational
@@ -330,17 +352,15 @@ class VELOVAE(BaseModuleClass):
     var_activation
         Callable used to ensure positivity of the variational distributions' variance.
         When `None`, defaults to `torch.exp`.
-    alpha_1 represent the maximum transcription rate once could reach in induction stage
     """
 
     def __init__(
         self,
-        transcriptome,
         n_input: int,
-        regulator_index,
-        target_index,
-        skeleton,
-        regulator_list,
+        regulator_index: list,
+        target_index: list,
+        skeleton: torch.Tensor,
+        regulator_list: list,
         activate: Literal["sigmoid", "softplus"] = "softplus",
         base_alpha: bool = True,
         n_hidden: int = 128,
@@ -366,7 +386,6 @@ class VELOVAE(BaseModuleClass):
         linear_decoder: bool = False,
         soft_constraint: bool = True,
         auto_regulation: bool = False,
-        neighborhood_kwargs={},
     ):
         super().__init__()
         self.n_latent = n_latent

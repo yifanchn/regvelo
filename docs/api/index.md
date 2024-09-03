@@ -26,5 +26,13 @@
    :toctree: reference/
    :nosignatures:
 
-   get_permutation_scores
+   TFscreening
+```
+
+```{eval-rst}
+.. autosummary::
+   :toctree: reference/
+   :nosignatures:
+
+   in_silico_block_simulation
 ```

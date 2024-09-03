@@ -15,13 +15,13 @@ sys.path[:0] = [str(HERE.parent), str(HERE / "extensions")]
 
 # -- Project information -----------------------------------------------------
 
-project_name = "velovi"
+project_name = "RegVelo"
 info = metadata(project_name)
-package_name = "velovi"
-author = info["Author"]
+package_name = "regvelovi"
+author = info["Weixu Wang"]
 copyright = f"{datetime.now():%Y}, {author}."
 version = info["Version"]
-repository_url = f"https://github.com/yoseflab/{project_name}"
+repository_url = "https://github.com/theislab/RegVelo_repo"
 
 # The full version, including alpha/beta/rc tags
 release = info["Version"]
@@ -175,7 +175,7 @@ def linkcode_resolve(domain, info):
 #
 html_theme = "sphinx_book_theme"
 html_static_path = ["_static"]
-html_title = "velovi"
+html_title = "RegVelo"
 
 html_theme_options = {
     "repository_url": github_repo,

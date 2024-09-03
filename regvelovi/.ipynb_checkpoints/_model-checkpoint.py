@@ -67,6 +67,24 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
     ----------
     adata
         AnnData object that has been registered via :func:`~velovi.VELOVI.setup_anndata`.
+    W
+        Prior gene regulatory graph (torch.Tensor), with row indicating targets, column indicating regulators.
+    regulators
+        Transcription factor list.
+    lam
+        Regularization parameter for controling the strengths of adding prior knowledge.
+    lam2
+        Regularization parameter for controling the strengths of L1 regularization to the Jacobian matrix.
+    vector_constraint
+        Regularization on velocity.
+    bias_constraint
+        Regularization on bias term (base transcription rate).
+    simple_dynamics
+        Use simple version of RegVelo.
+    activate
+        Activation function used for modeling transcription rate.
+    base_alpha
+        Adding base transcription rate
     n_hidden
         Number of nodes per hidden layer.
     n_latent
@@ -79,6 +97,10 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         Initialize gamma using the data-driven technique.
     linear_decoder
         Use a linear decoder from latent space to time.
+    soft_constraint
+        Use soft constraint mode or hard constraint mode.
+    auto_regulation
+        Estimate self-regulation links in the GRN.
     **model_kwargs
         Keyword args for :class:`~velovi.VELOVAE`
     """
@@ -152,7 +174,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         alpha_1_unconstr = alpha_1_unconstr[target_index]
         alpha_unconstr = alpha_unconstr[target_index]
 
-        is W is None:
+        if W is None:
             W = torch.zeros([len(adata.var.index.values),len(adata.var.index.values)])
         
         ### adding regulator list
@@ -166,7 +188,6 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
             bias_constraint = False
 
         self.module = VELOVAE(
-            transcriptome = spliced,
             n_input=self.summary_stats["n_vars"],
             regulator_index = regulator_index,
             target_index = target_index,
@@ -220,12 +241,12 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         **trainer_kwargs,
     ):
         """Train the model.
+        The code is adapted from veloVI repository (https://github.com/YosefLab/velovi/)
 
         Parameters
         ----------
         max_epochs
-            Number of passes through the dataset. If `None`, defaults to
-            `np.min([round((20000 / n_cells) * 400), 400])`
+            Number of passes through the dataset. Defaults to 1500
         lr
             Learning rate for optimization
         weight_decay
@@ -290,119 +311,19 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         return runner()
 
     @torch.inference_mode()
-    def get_state_assignment(
-        self,
-        adata: Optional[AnnData] = None,
-        indices: Optional[Sequence[int]] = None,
-        gene_list: Optional[Sequence[str]] = None,
-        hard_assignment: bool = False,
-        n_samples: int = 20,
-        batch_size: Optional[int] = None,
-        return_mean: bool = True,
-        return_numpy: Optional[bool] = None,
-    ) -> Tuple[Union[np.ndarray, pd.DataFrame], List[str]]:
-        """Returns cells by genes by states probabilities.
-
-        Parameters
-        ----------
-        adata
-            AnnData object with equivalent structure to initial AnnData. If `None`, defaults to the
-            AnnData object used to initialize the model.
-        indices
-            Indices of cells in adata to use. If `None`, all cells are used.
-        gene_list
-            Return frequencies of expression for a subset of genes.
-            This can save memory when working with large datasets and few genes are
-            of interest.
-        hard_assignment
-            Return a hard state assignment
-        n_samples
-            Number of posterior samples to use for estimation.
-        batch_size
-            Minibatch size for data loading into model. Defaults to `scvi.settings.batch_size`.
-        return_mean
-            Whether to return the mean of the samples.
-        return_numpy
-            Return a :class:`~numpy.ndarray` instead of a :class:`~pandas.DataFrame`. DataFrame includes
-            gene names as columns. If either `n_samples=1` or `return_mean=True`, defaults to `False`.
-            Otherwise, it defaults to `True`.
-
-        Returns
-        -------
-        If `n_samples` > 1 and `return_mean` is False, then the shape is `(samples, cells, genes)`.
-        Otherwise, shape is `(cells, genes)`. In this case, return type is :class:`~pandas.DataFrame` unless `return_numpy` is True.
-        """
-        adata = self._validate_anndata(adata)
-        scdl = self._make_data_loader(
-            adata=adata, indices=indices, batch_size=batch_size
-        )
-
-        if gene_list is None:
-            gene_mask = slice(None)
-        else:
-            all_genes = adata.var_names
-            gene_mask = [True if gene in gene_list else False for gene in all_genes]
-
-        if n_samples > 1 and return_mean is False:
-            if return_numpy is False:
-                warnings.warn(
-                    "return_numpy must be True if n_samples > 1 and return_mean is False, returning np.ndarray"
-                )
-            return_numpy = True
-        if indices is None:
-            indices = np.arange(adata.n_obs)
-
-        states = []
-        for tensors in scdl:
-            minibatch_samples = []
-            for _ in range(n_samples):
-                _, generative_outputs = self.module.forward(
-                    tensors=tensors,
-                    compute_loss=False,
-                )
-                output = generative_outputs["px_pi"]
-                output = output[..., gene_mask, :]
-                output = output.cpu().numpy()
-                minibatch_samples.append(output)
-            # samples by cells by genes by four
-            states.append(np.stack(minibatch_samples, axis=0))
-            if return_mean:
-                states[-1] = np.mean(states[-1], axis=0)
-
-        states = np.concatenate(states, axis=0)
-        state_cats = [
-            "induction",
-            "induction_steady",
-            "repression",
-            "repression_steady",
-        ]
-        if hard_assignment and return_mean:
-            hard_assign = states.argmax(-1)
-
-            hard_assign = pd.DataFrame(
-                data=hard_assign, index=adata.obs_names, columns=adata.var_names
-            )
-            for i, s in enumerate(state_cats):
-                hard_assign = hard_assign.replace(i, s)
-
-            states = hard_assign
-
-        return states, state_cats
-
-    @torch.inference_mode()
     def get_latent_time(
         self,
         adata: Optional[AnnData] = None,
         indices: Optional[Sequence[int]] = None,
         gene_list: Optional[Sequence[str]] = None,
-        time_statistic: Literal["mean", "max"] = "mean",
         n_samples: int = 1,
         n_samples_overall: Optional[int] = None,
         batch_size: Optional[int] = None,
         return_mean: bool = True,
         return_numpy: Optional[bool] = None,
     ) -> Union[np.ndarray, pd.DataFrame]:
-        """Returns the cells by genes latent time.
+        """Returns the cells by genes latent time. 
+        The code is adapted from veloVI repository (https://github.com/YosefLab/velovi/)
 
         Parameters
         ----------
@@ -415,9 +336,6 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
             Return frequencies of expression for a subset of genes.
             This can save memory when working with large datasets and few genes are
             of interest.
-        time_statistic
-            Whether to compute expected time over states, or maximum a posteriori time over maximal
-            probability state.
         n_samples
             Number of posterior samples to use for estimation.
         n_samples_overall
@@ -470,26 +388,11 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
                 )
                 ind_time = generative_outputs["px_rho"] * self.module.t_max
 
-                if time_statistic == "mean":
-                    output = (
-                        ind_time
-                        # + steady_prob * switch_time
-                        # + rep_steady_prob * self.module.t_max
-                    )
-                else:
-                    t = torch.stack(
-                        [
-                            ind_time,
-                            switch_time.expand(ind_time.shape),
-                            rep_time,
-                            torch.zeros_like(ind_time),
-                        ],
-                        dim=2,
-                    )
-                    max_prob = torch.amax(pi, dim=-1)
-                    max_prob = torch.stack([max_prob] * 4, dim=2)
-                    max_prob_mask = pi.ge(max_prob)
-                    output = (t * max_prob_mask).sum(dim=-1)
+                output = (
+                    ind_time
+                    # + steady_prob * switch_time
+                    # + rep_steady_prob * self.module.t_max
+                )
 
                 output = output[..., gene_mask]
                 output = output.cpu().numpy()
@@ -525,8 +428,6 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         batch_size: Optional[int] = None,
         return_mean: bool = True,
         return_numpy: Optional[bool] = None,
-        velo_statistic: str = "mean",
-        velo_mode: Literal["spliced", "unspliced"] = "spliced",
         clip: bool = True,
     ) -> Union[np.ndarray, pd.DataFrame]:
         """Returns cells by genes velocity estimates.
@@ -554,11 +455,6 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
             Return a :class:`~numpy.ndarray` instead of a :class:`~pandas.DataFrame`. DataFrame includes
             gene names as columns. If either `n_samples=1` or `return_mean=True`, defaults to `False`.
             Otherwise, it defaults to `True`.
-        velo_statistic
-            Whether to compute expected velocity over states, or maximum a posteriori velocity over maximal
-            probability state.
-        velo_mode
-            Compute ds/dt or du/dt.
         clip
             Clip to minus spliced value
 
@@ -609,28 +505,10 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
                     ind_t
                 )
                 velo = beta * mean_u - gamma * mean_s
-                
                 # expectation
-                if velo_statistic == "mean":
-                    output = (
-                        velo
-                    )
-                # maximum
-                else:
-                    v = torch.stack(
-                        [
-                            velo_ind,
-                            velo_steady.expand(velo_ind.shape),
-                            velo_rep,
-                            torch.zeros_like(velo_rep),
-                        ],
-                        dim=2,
-                    )
-                    max_prob = torch.amax(pi, dim=-1)
-                    max_prob = torch.stack([max_prob] * 4, dim=2)
-                    max_prob_mask = pi.ge(max_prob)
-                    output = (v * max_prob_mask).sum(dim=-1)
-
+                output = (
+                    velo
+                )
                 output = output[..., gene_mask]
                 output = output.cpu().numpy()
                 minibatch_samples.append(output)
@@ -661,127 +539,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
             return velos
         
     @torch.inference_mode()
-    def get_transcription_rate(
-        self,
-        adata: Optional[AnnData] = None,
-        indices: Optional[Sequence[int]] = None,
-        gene_list: Optional[Sequence[str]] = None,
-        n_samples: int = 1,
-        n_samples_overall: Optional[int] = None,
-        batch_size: Optional[int] = None,
-        return_mean: bool = True,
-        return_numpy: Optional[bool] = None,
-        clip: bool = True,
-    ) -> Union[np.ndarray, pd.DataFrame]:
-        """Returns cells by genes velocity estimates.
-
-        Parameters
-        ----------
-        adata
-            AnnData object with equivalent structure to initial AnnData. If `None`, defaults to the
-            AnnData object used to initialize the model.
-        indices
-            Indices of cells in adata to use. If `None`, all cells are used.
-        gene_list
-            Return velocities for a subset of genes.
-            This can save memory when working with large datasets and few genes are
-            of interest.
-        n_samples
-            Number of posterior samples to use for estimation for each cell.
-        n_samples_overall
-            Number of overall samples to return. Setting this forces n_samples=1.
-        batch_size
-            Minibatch size for data loading into model. Defaults to `scvi.settings.batch_size`.
-        return_mean
-            Whether to return the mean of the samples.
-        return_numpy
-            Return a :class:`~numpy.ndarray` instead of a :class:`~pandas.DataFrame`. DataFrame includes
-            gene names as columns. If either `n_samples=1` or `return_mean=True`, defaults to `False`.
-            Otherwise, it defaults to `True`.
-        velo_statistic
-            Whether to compute expected velocity over states, or maximum a posteriori velocity over maximal
-            probability state.
-        velo_mode
-            Compute ds/dt or du/dt.
-        clip
-            Clip to minus spliced value
-
-        Returns
-        -------
-        If `n_samples` > 1 and `return_mean` is False, then the shape is `(samples, cells, genes)`.
-        Otherwise, shape is `(cells, genes)`. In this case, return type is :class:`~pandas.DataFrame` unless `return_numpy` is True.
-        """
-        adata = self._validate_anndata(adata)
-        if indices is None:
-            indices = np.arange(adata.n_obs)
-        if n_samples_overall is not None:
-            indices = np.random.choice(indices, n_samples_overall)
-            n_samples = 1
-        scdl = self._make_data_loader(
-            adata=adata, indices=indices, batch_size=batch_size
-        )
-
-        if gene_list is None:
-            gene_mask = slice(None)
-        else:
-            all_genes = adata.var_names
-            gene_mask = [True if gene in gene_list else False for gene in all_genes]
-
-        if n_samples > 1 and return_mean is False:
-            if return_numpy is False:
-                warnings.warn(
-                    "return_numpy must be True if n_samples > 1 and return_mean is False, returning np.ndarray"
-                )
-            return_numpy = True
-        if indices is None:
-            indices = np.arange(adata.n_obs)
-
-        trans = []
-        for tensors in scdl:
-            minibatch_samples = []
-            for _ in range(n_samples):
-                inference_outputs, generative_outputs = self.module.forward(
-                    tensors=tensors,
-                    compute_loss=False,
-                )
-                px_rho = generative_outputs["px_rho"]
-
-                ind_t = self.module.t_max * px_rho
-                mean_u, mean_s, _ = self.module._get_induction_unspliced_spliced(
-                    ind_t
-                )
-                transcription_rate = self.module.v_encoder.transcription_rate(mean_s)
-                
-                output = (
-                        transcription_rate
-                )
-
-                output = output[..., gene_mask]
-                output = output.cpu().numpy()
-                minibatch_samples.append(output)
-            # samples by cells by genes
-            trans.append(np.stack(minibatch_samples, axis=0))
-            if return_mean:
-                # mean over samples axis
-                trans[-1] = np.mean(trans[-1], axis=0)
-
-        if n_samples > 1:
-            # The -2 axis correspond to cells.
-            trans = np.concatenate(trans, axis=-2)
-        else:
-            trans = np.concatenate(trans, axis=0)
-
-        if return_numpy is None or return_numpy is False:
-            return pd.DataFrame(
-                trans,
-                columns=adata.var_names[self.module.target_index],
-                index=adata.obs_names[indices],
-            )
-        else:
-            return trans
-
-    @torch.inference_mode()
-    def get_expression_fit(
+    def rgv_expression_fit(
         self,
         adata: Optional[AnnData] = None,
         indices: Optional[Sequence[int]] = None,
@@ -790,7 +548,6 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         batch_size: Optional[int] = None,
         return_mean: bool = True,
         return_numpy: Optional[bool] = None,
-        restrict_to_latent_dim: Optional[int] = None,
     ) -> Union[np.ndarray, pd.DataFrame]:
         r"""Returns the fitted spliced and unspliced abundance (s(t) and u(t)).
 
@@ -848,45 +605,21 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
             minibatch_samples_s = []
             minibatch_samples_u = []
             for _ in range(n_samples):
-                inference_outputs, generative_outputs = self.module.forward(
+                _, generative_outputs = self.module.forward(
                     tensors=tensors,
                     compute_loss=False,
-                    generative_kwargs={"latent_dim": restrict_to_latent_dim},
                 )
-
-                gamma = inference_outputs["gamma"]
-                beta = inference_outputs["beta"]
-                alpha = inference_outputs["alpha"]
-                alpha_1 = inference_outputs["alpha_1"]
-                lambda_alpha = inference_outputs["lambda_alpha"]
-                px_pi = generative_outputs["px_pi"]
-                scale = generative_outputs["scale"]
                 px_rho = generative_outputs["px_rho"]
-                px_tau = generative_outputs["px_tau"]
 
-                (
-                    mixture_dist_s,
-                    mixture_dist_u,
-                    _,
-                    
-                ) = self.module.get_px(
-                    px_pi,
-                    px_rho,
-                    px_tau,
-                    scale,
-                    gamma,
-                    beta,
-                    alpha,
-                    alpha_1,
-                    lambda_alpha,
+                ind_t = self.module.t_max * px_rho
+                fit_u, fit_s, _ = self.module._get_induction_unspliced_spliced(
+                    ind_t
                 )
-                fit_s = mixture_dist_s.mean
-                fit_u = mixture_dist_u.mean
 
                 fit_s = fit_s[..., gene_mask]
-                fit_s = fit_s.cpu().numpy()
+                fit_s = fit_s.detach().cpu().numpy()
                 fit_u = fit_u[..., gene_mask]
-                fit_u = fit_u.cpu().numpy()
+                fit_u = fit_u.detach().cpu().numpy()
 
                 minibatch_samples_s.append(fit_s)
                 minibatch_samples_u.append(fit_u)
@@ -956,12 +689,25 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         adata: Optional[AnnData] = None,
         batch_size: Optional[int] = None,
     ) -> AnnData:
+        """Returns the processed anndata object containing velocity and latent time layers
+        The code is adapted from veloVI repository (https://github.com/YosefLab/velovi/)
+
+        Parameters
+        ----------
+        n_samples
+            Number of posterior samples to use for estimation.
+        batch_size
+            Minibatch size for data loading into model. Defaults to `scvi.settings.batch_size`.
+        adata
+            AnnData object with equivalent structure to initial AnnData. If `None`, defaults to the
+            AnnData object used to initialize the model.
+        """
         if batch_size is None:
             batch_size = self.batch_size
             
         adata = self._validate_anndata(adata)
-        latent_time = self.get_latent_time(n_samples=n_samples, time_statistic = "mean",batch_size = batch_size)
-        velocities = self.get_velocity(n_samples=n_samples, velo_statistic="mean",batch_size = batch_size)
+        latent_time = self.get_latent_time(n_samples=n_samples, batch_size = batch_size)
+        velocities = self.get_velocity(n_samples=n_samples,batch_size = batch_size)
 
         t = latent_time
         scaling = 20 / t.max(0)
@@ -976,121 +722,6 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         return adata_target
 
     @torch.inference_mode()
-    def get_gene_likelihood(
-        self,
-        adata: Optional[AnnData] = None,
-        indices: Optional[Sequence[int]] = None,
-        gene_list: Optional[Sequence[str]] = None,
-        n_samples: int = 1,
-        batch_size: Optional[int] = None,
-        return_mean: bool = True,
-        return_numpy: Optional[bool] = None,
-    ) -> Union[np.ndarray, pd.DataFrame]:
-        r"""Returns the likelihood per gene. Higher is better.
-
-        This is denoted as :math:`\rho_n` in the scVI paper.
-
-        Parameters
-        ----------
-        adata
-            AnnData object with equivalent structure to initial AnnData. If `None`, defaults to the
-            AnnData object used to initialize the model.
-        indices
-            Indices of cells in adata to use. If `None`, all cells are used.
-        transform_batch
-            Batch to condition on.
-            If transform_batch is:
-
-            - None, then real observed batch is used.
-            - int, then batch transform_batch is used.
-        gene_list
-            Return frequencies of expression for a subset of genes.
-            This can save memory when working with large datasets and few genes are
-            of interest.
-        library_size
-            Scale the expression frequencies to a common library size.
-            This allows gene expression levels to be interpreted on a common scale of relevant
-            magnitude. If set to `"latent"`, use the latent libary size.
-        n_samples
-            Number of posterior samples to use for estimation.
-        batch_size
-            Minibatch size for data loading into model. Defaults to `scvi.settings.batch_size`.
-        return_mean
-            Whether to return the mean of the samples.
-        return_numpy
-            Return a :class:`~numpy.ndarray` instead of a :class:`~pandas.DataFrame`. DataFrame includes
-            gene names as columns. If either `n_samples=1` or `return_mean=True`, defaults to `False`.
-            Otherwise, it defaults to `True`.
-
-        Returns
-        -------
-        If `n_samples` > 1 and `return_mean` is False, then the shape is `(samples, cells, genes)`.
-        Otherwise, shape is `(cells, genes)`. In this case, return type is :class:`~pandas.DataFrame` unless `return_numpy` is True.
-        """
-        adata = self._validate_anndata(adata)
-        scdl = self._make_data_loader(
-            adata=adata, indices=indices, batch_size=batch_size
-        )
-
-        if gene_list is None:
-            gene_mask = slice(None)
-        else:
-            all_genes = adata.var_names
-            gene_mask = [True if gene in gene_list else False for gene in all_genes]
-
-        if n_samples > 1 and return_mean is False:
-            if return_numpy is False:
-                warnings.warn(
-                    "return_numpy must be True if n_samples > 1 and return_mean is False, returning np.ndarray"
-                )
-            return_numpy = True
-        if indices is None:
-            indices = np.arange(adata.n_obs)
-
-        rls = []
-        for tensors in scdl:
-            minibatch_samples = []
-            for _ in range(n_samples):
-                inference_outputs, generative_outputs = self.module.forward(
-                    tensors=tensors,
-                    compute_loss=False,
-                )
-                spliced = tensors[REGISTRY_KEYS.X_KEY]
-                unspliced = tensors[REGISTRY_KEYS.U_KEY]
-
-                gamma = inference_outputs["gamma"]
-                beta = inference_outputs["beta"]
-                alpha_1 = inference_outputs["alpha_1"]
-                scale = generative_outputs["scale"]
-                px_rho = generative_outputs["px_rho"]
-
-                (
-                    dist_s,
-                    dist_u,
-                    _,
-                ) = self.module.get_px(
-                    px_rho,
-                    scale,
-                    gamma,
-                    beta,
-                    alpha_1,
-                )
-                device = gamma.device
-                reconst_loss_s = -dist_s.log_prob(spliced.to(device))
-                reconst_loss_u = -dist_u.log_prob(unspliced.to(device))
-                output = -(reconst_loss_s + reconst_loss_u)
-                output = output[..., gene_mask]
-                output = output.cpu().numpy()
-                minibatch_samples.append(output)
-            # samples by cells by genes by four
-            rls.append(np.stack(minibatch_samples, axis=0))
-            if return_mean:
-                rls[-1] = np.mean(rls[-1], axis=0)
-
-        rls = np.concatenate(rls, axis=0)
-        return rls
-
-    @torch.inference_mode()
     def get_rates(self):
         gamma, beta, alpha_1= self.module._get_rates()
 
@@ -1100,44 +731,6 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
             "alpha_1": alpha_1.cpu().numpy(),
         }
 
-    """
-    @classmethod
-    @setup_anndata_dsp.dedent
-    def setup_anndata(
-        cls,
-        adata: AnnData,
-        spliced_layer: str,
-        unspliced_layer: str,
-        **kwargs,
-    ) -> Optional[AnnData]:
-        %(summary)s.
-
-        Parameters
-        ----------
-        %(param_adata)s
-        spliced_layer
-            Layer in adata with spliced normalized expression
-        unspliced_layer
-            Layer in adata with unspliced normalized expression.
-
-        Returns
-        -------
-        %(returns)s
-        
-        setup_method_args = cls._get_setup_method_args(**locals())
-        anndata_fields = [
-            LayerField(REGISTRY_KEYS.X_KEY, spliced_layer, is_count_data=False),
-            LayerField(REGISTRY_KEYS.U_KEY, unspliced_layer, is_count_data=False),
-        ]
-        adata_manager = AnnDataManager(
-            fields=anndata_fields, setup_method_args=setup_method_args
-        )
-        adata_manager.register_fields(adata, **kwargs)
-        cls.register_manager(adata_manager)
-    """
-
-
-    ## TODO: Create new anndata setting, load neighborhood information and add constraint
     @classmethod
     @setup_anndata_dsp.dedent
     def setup_anndata(
@@ -1145,7 +738,6 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         adata: AnnData,
         spliced_layer: Optional[str] = None,
         unspliced_layer: Optional[str] = None,
-        ts_layer: Optional[str] = None,
         **kwargs,
     ) -> Optional[AnnData]:
         """%(summary)s.
@@ -1157,10 +749,6 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
             Layer in adata with spliced normalized expression
         unspliced_layer
             Layer in adata with unspliced normalized expression.
-        knn_layer
-            KNN index for nearest neighbors
-        ts_layer
-            transition matrix layer
 
         Returns
         -------
@@ -1171,8 +759,6 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
             LayerField(REGISTRY_KEYS.X_KEY, spliced_layer, is_count_data=False),
             LayerField(REGISTRY_KEYS.U_KEY, unspliced_layer, is_count_data=False),
         ]
-        if ts_layer is not None:
-            anndata_fields.append(ObsmField(REGISTRY_KEYS_VT.TS_KEY, ts_layer))
 
         adata_manager = AnnDataManager(
             fields=anndata_fields, setup_method_args=setup_method_args

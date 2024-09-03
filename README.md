@@ -1,4 +1,12 @@
 # RegVelo
+
+[![Tests][badge-tests]][link-tests]
+[![Documentation][badge-docs]][link-docs]
+
+[badge-tests]: https://img.shields.io/github/actions/workflow/status/theislab/RegVelo_repo/test.yml?branch=main
+[link-tests]: https://github.com/theislab/RegVelo_repo/actions/workflows/test.yml
+[badge-docs]: https://img.shields.io/readthedocs/RegVelo
+
 inferring regulatory cellular dynamics
 
 ## Getting started
@@ -11,7 +19,7 @@ You need to have Python 3.8 or newer installed on your system. If you don't have
 Python installed, we recommend installing [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
 
 ```bash
-pip install git+https://github.com/theislab/RegVelo.git@main
+pip install git+https://github.com/theislab/RegVelo_repo.git@main
 ```
 
 

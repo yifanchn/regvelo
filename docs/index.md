@@ -2,7 +2,7 @@
 
 ```
 
-Welcome to the velovi documentation.
+Welcome to the RegVelo documentation.
 
 ```{toctree}
 :hidden: true
