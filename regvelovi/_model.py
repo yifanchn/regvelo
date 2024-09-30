@@ -46,7 +46,7 @@ class ModifiedTrainingPlan(TrainingPlan):
     def __init__(self, module, **plan_kwargs):
         super().__init__(module, **plan_kwargs)
 
-    def training_step(self, batch, batch_idx, optimizer_idx = 0):
+    def training_step(self, batch, batch_idx):
         # the modification:
         self.module.current_epoch = self.current_epoch
         self.module.global_step = self.global_step
@@ -230,7 +230,6 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         lr: float = 1e-2,
         weight_decay: float = 1e-5,
         eps: float = 1e-16,
-        use_gpu: Optional[Union[str, int, bool]] = None,
         train_size: float = 0.9,
         batch_size: Optional[int] = None,
         validation_size: Optional[float] = None,
@@ -298,14 +297,12 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
             early_stopping if es not in trainer_kwargs.keys() else trainer_kwargs[es]
         )
         trainer_kwargs["early_stopping_patience"] = 45
-        #trainer_kwargs["early_stopping_monitor"] = 'validation_loss'
         trainer_kwargs["early_stopping_monitor"] = 'elbo_validation'
         runner = TrainRunner(
             self,
             training_plan=training_plan,
             data_splitter=data_splitter,
             max_epochs=max_epochs,
-            use_gpu=use_gpu,
             **trainer_kwargs,
         )
         return runner()
