@@ -3,7 +3,7 @@ import scvelo as scv
 import numpy as np
 import pandas as pd
 from scvi.data import synthetic_iid
-from regvelovi import REGVELOVI,TFscreening
+from regvelovi import REGVELOVI
 import torch
 
 def test_regvelo():
