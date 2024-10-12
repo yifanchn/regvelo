@@ -1,4 +1,4 @@
-# RegVelo
+# RegVelo - towards gene regulatory informed cell dynamics inference and simulation
 
 inferring regulatory cellular dynamics
 
