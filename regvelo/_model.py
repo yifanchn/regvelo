@@ -705,7 +705,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         latent_time = self.get_latent_time(n_samples=n_samples, batch_size = batch_size)
         velocities = self.get_velocity(n_samples=n_samples,batch_size = batch_size)
 
-        t = latent_time
+        t = latent_time.values.copy()
         scaling = 20 / t.max(0)
         adata_target = adata[:,self.module.target_index].copy()
     
