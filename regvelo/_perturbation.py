@@ -64,7 +64,7 @@ def p_adjust_bh(p):
 
 def abundance_test(prob_raw, prob_pert, correlation = "sp"):
     y = [0] * prob_raw.shape[0] + [1] * prob_pert.shape[0]
-    X = pd.concat([prob_raw,prob_pert],0)
+    X = pd.concat([prob_raw,prob_pert])
     
     table = []
     for i in range(prob_raw.shape[1]):
