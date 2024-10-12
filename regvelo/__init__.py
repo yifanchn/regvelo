@@ -1,11 +1,11 @@
-"""regvelovi."""
+"""regvelo."""
 
 import logging
 
 from rich.console import Console
 from rich.logging import RichHandler
 
-from regvelovi import datasets
+from regvelo import datasets
 from ._constants import REGISTRY_KEYS
 from ._model import REGVELOVI, VELOVAE
 from ._utils import get_permutation_scores, preprocess_data, prior_GRN, sanity_check
