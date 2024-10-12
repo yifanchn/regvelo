@@ -21,7 +21,7 @@ package_name = "regvelovi"
 author = info["Weixu Wang"]
 copyright = f"{datetime.now():%Y}, {author}."
 version = info["Version"]
-repository_url = "https://github.com/theislab/RegVelo_repo"
+repository_url = "https://github.com/theislab/RegVelo"
 
 # The full version, including alpha/beta/rc tags
 release = info["Version"]

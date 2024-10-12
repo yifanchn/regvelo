@@ -18,7 +18,7 @@ try:
 except ModuleNotFoundError:
     import importlib_metadata
 
-package_name = "regvelovi"
+package_name = "regvelo"
 __version__ = importlib_metadata.version(package_name)
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ console = Console(force_terminal=True)
 if console.is_jupyter is True:
     console.is_jupyter = False
 ch = RichHandler(show_path=False, console=console, show_time=False)
-formatter = logging.Formatter("regvelovi: %(message)s")
+formatter = logging.Formatter("regvelo: %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
