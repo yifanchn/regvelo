@@ -584,6 +584,8 @@ class VELOVAE(BaseModuleClass):
             "z": z,
             "qz_m": qz_m,
             "qz_v": qz_v,
+            "qzm": qzm,
+            "qzv": qzv,
             "gamma": gamma,
             "beta": beta,
             "alpha_1": alpha_1,
