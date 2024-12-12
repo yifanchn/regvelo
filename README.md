@@ -7,7 +7,7 @@ Inferring regulatory cellular dynamics through coupled splicing dynamics. If you
     title = {RegVelo: gene-regulatory-informed dynamics of single cells},
     author = {Wang, Weixu and Hu, Zhiyuan and Weiler, Philipp and Mayes, Sarah and Lange, Marius and Wang, Jingye and Xue, Zhengyuan and Sauka-Spengler, Tatjana Theis, Fabian J.},
     doi = {10.1101/2024.12.11.627935},
-    url = { https://doi.org/10.1101/2024.12.11.627935},
+    url = {https://doi.org/10.1101/2024.12.11.627935},
     year = {2024},
     publisher = {Cold Spring Harbor Laboratory},
 }
