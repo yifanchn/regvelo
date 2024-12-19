@@ -1,10 +1,6 @@
 # RegVelo: gene-regulatory-informed dynamics of single cells
-==============================================================
-.. image:: docs/_static/img/overview_fig.png#gh-dark-mode-only
-    :width: 600px
-    :align: center
 
-**RegVelo** is a end-to-end framework to infer regulatory cellular dynamics through coupled splicing dynamics. See our 'RegVelo manuscript'_ to learn more. If you use our tool in your own work, please cite it as
+**RegVelo** is a end-to-end framework to infer regulatory cellular dynamics through coupled splicing dynamics. If you use our tool in your own work, please cite it as
 
 ```
 @article{wang:24,
@@ -33,5 +29,3 @@ Next, install the package with
 ```bash
 pip install git+https://github.com/theislab/regvelo.git@main
 ```
-
-.. _RegVelo manuscript: https://www.biorxiv.org/content/10.1101/2024.12.11.627935v1
