@@ -2,7 +2,9 @@ import torch
 import pandas as pd
 import numpy as np
 
-from scipy.stats import spearmanr, pearsonr
+from scipy.stats import ranksums, ttest_ind
+from sklearn.metrics import roc_auc_score
+
 import cellrank as cr
 from anndata import AnnData
 from scvelo import logging as logg
@@ -10,6 +12,41 @@ import os,shutil
 from typing import Dict, Optional, Sequence, Tuple, Union
 
 from ._model import REGVELOVI
+
+
+def split_elements(character_list):
+    """split elements."""
+    result_list = []
+    for element in character_list:
+        if '_' in element:
+            parts = element.split('_')
+            result_list.append(parts)
+        else:
+            result_list.append([element])
+    return result_list
+
+def combine_elements(split_list):
+    """combine elements."""
+    result_list = []
+    for parts in split_list:
+        combined_element = "_".join(parts)
+        result_list.append(combined_element)
+    return result_list
+
+def get_list_name(lst):
+    names = []
+    for name, obj in lst.items():
+        names.append(name)
+    return names
+
+def p_adjust_bh(p):
+    """Benjamini-Hochberg p-value correction for multiple hypothesis testing."""
+    p = np.asfarray(p)
+    by_descend = p.argsort()[::-1]
+    by_orig = by_descend.argsort()
+    steps = float(len(p)) / np.arange(len(p), 0, -1)
+    q = np.minimum(1, np.minimum.accumulate(steps * p[by_descend]))
+    return q[by_orig]
 
 def in_silico_block_simulation(
         model: str,
@@ -52,54 +89,46 @@ def in_silico_block_simulation(
     
     return adata_target_perturb,reg_vae_perturb
 
+def abundance_test(prob_raw: pd.DataFrame, prob_pert: pd.DataFrame, method: str = "likelihood") -> pd.DataFrame:
+    """Perform an abundance test between two probability datasets.
 
-def p_adjust_bh(p):
-    """Benjamini-Hochberg p-value correction for multiple hypothesis testing."""
-    p = np.asfarray(p)
-    by_descend = p.argsort()[::-1]
-    by_orig = by_descend.argsort()
-    steps = float(len(p)) / np.arange(len(p), 0, -1)
-    q = np.minimum(1, np.minimum.accumulate(steps * p[by_descend]))
-    return q[by_orig]
+    Parameters
+    ----------
+    prob_raw : pd.DataFrame
+        Raw probabilities dataset.
+    prob_pert : pd.DataFrame
+        Perturbed probabilities dataset.
+    method : str, optional (default="likelihood")
+        Method to calculate scores: "likelihood" or "t-statistics".
 
-def abundance_test(prob_raw, prob_pert, correlation = "sp"):
-    y = [0] * prob_raw.shape[0] + [1] * prob_pert.shape[0]
-    X = pd.concat([prob_raw,prob_pert])
-    
+    Returns
+    -------
+    pd.DataFrame
+        Dataframe with coefficients, p-values, and FDR adjusted p-values.
+    """
+    y = [1] * prob_raw.shape[0] + [0] * prob_pert.shape[0]
+    X = pd.concat([prob_raw, prob_pert], axis=0)
+
     table = []
     for i in range(prob_raw.shape[1]):
-        pred = X.iloc[:,i]
-
-        if correlation == "p":
-            table.append(np.expand_dims(np.array(list(pearsonr(pred,y))),0))
-        elif correlation == "sp":
-            table.append(np.expand_dims(np.array(list(spearmanr(pred,y))),0))
-    
-    table = np.concatenate(table,0)
-    table = pd.DataFrame(table)
-    table.index = prob_raw.columns
-    table.columns = ["coefficient","p-value"]
-    ## Running FDR addjust
-    table.loc[:,"FDR adjusted p-value"] = p_adjust_bh(table.loc[:,"p-value"].tolist())
-    
-    return table
-
-def split_elements(character_list):
-    result_list = []
-    for element in character_list:
-        if '_' in element:
-            parts = element.split('_')
-            result_list.append(parts)
+        pred = np.array(X.iloc[:, i])
+        if np.sum(pred) == 0:
+            score, pval = np.nan, np.nan
         else:
-            result_list.append([element])
-    return result_list
+            pval = ranksums(pred[np.array(y) == 0], pred[np.array(y) == 1])[1]
+            if method == "t-statistics":
+                score = ttest_ind(pred[np.array(y) == 0], pred[np.array(y) == 1])[0]
+            elif method == "likelihood":
+                score = roc_auc_score(y, pred)
+            else:
+                raise NotImplementedError("Supported methods are 't-statistics' and 'likelihood'.")
 
-def combine_elements(split_list):
-    result_list = []
-    for parts in split_list:
-        combined_element = "_".join(parts)
-        result_list.append(combined_element)
-    return result_list
+        table.append(np.expand_dims(np.array([score, pval]), 0))
+
+    table = np.concatenate(table, axis=0)
+    table = pd.DataFrame(table, index=prob_raw.columns, columns=["coefficient", "p-value"])
+    table["FDR adjusted p-value"] = p_adjust_bh(table["p-value"].tolist())
+    return table
 
 def TFScanning_func(
     model:str, 
@@ -109,7 +138,7 @@ def TFScanning_func(
     KO_list: Optional[Union[str, Sequence[str], Dict[str, Sequence[str]], pd.Series]] = None,
     n_states: Optional[Union[int, Sequence[int]]] = None,
     cutoff: Optional[Union[int, Sequence[int]]] = 1e-3,
-    correlation: Optional[str] = "sp",
+    method: Optional[str] = "likelihood",
     combined_kernel: Optional[bool] = False,
 ):
 
@@ -134,6 +163,10 @@ def TFScanning_func(
         Number of macrostates to compute.
     cutoff
         The threshold for determing which links need to be muted,
+    method
+        Quantify perturbation effects via `likelihood` or `t-statistics`
+    combined_kernel
+        Use combined kernel (0.8*VelocityKernel + 0.2*ConnectivityKernel)
     """
 
     reg_vae = REGVELOVI.load(model, adata)
@@ -253,7 +286,7 @@ def TFScanning_func(
         
         y = [0] * fate_prob.shape[0] + [1] * fate_prob2.shape[0]
         fate_prob2.index = [i + "_perturb" for i in fate_prob2.index]
-        test_result = abundance_test(fate_prob, fate_prob2, correlation)
+        test_result = abundance_test(fate_prob, fate_prob2, method)
         coef.append(test_result.loc[:, "coefficient"])
         pvalue.append(test_result.loc[:, "FDR adjusted p-value"]) 
         logg.info("Done "+ combine_elements([tf])[0])
@@ -262,11 +295,6 @@ def TFScanning_func(
     d = {'TF': KO_list, 'coefficient': coef, 'pvalue': pvalue}   
     return d
 
-def get_list_name(lst):
-    names = []
-    for name, obj in lst.items():
-        names.append(name)
-    return names
 
 def TFscreening(
     adata:AnnData, 
@@ -281,7 +309,7 @@ def TFscreening(
     n_states: Optional[Union[int, Sequence[int]]] = 8,
     cutoff: Optional[float] = 1e-3,
     max_nruns: Optional[float] = 5,
-    correlation: Optional[str] = "sp",
+    method: Optional[str] = "likelihood",
     dir:Optional[str] = None
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """ Perform in silico TF regulon knock-out screening
@@ -317,8 +345,8 @@ def TFscreening(
         maximum number of runs, soft constrainted RegVelo model need to have repeat runs to get stable perturbation results.
     dir
         the location to save temporary datasets.
-    correlation
-        Use either spearman ("sp") or pearson ("p") to quantify perturbation effects
+    method
+        Use either `likelihood` or `t-statistics` to quantify perturbation effects
     """
 
     if soft_constraint is not True:
@@ -351,7 +379,7 @@ def TFscreening(
         logg.info("inferring perturbation...")
         while True:
             try:
-                perturb_screening = TFScanning_func(model, adata, cluster_label, terminal_states, KO_list, n_states, cutoff, correlation)
+                perturb_screening = TFScanning_func(model, adata, cluster_label, terminal_states, KO_list, n_states, cutoff, method)
                 
                 coef = pd.DataFrame(np.array(perturb_screening['coefficient']))
                 coef.index = perturb_screening['TF']

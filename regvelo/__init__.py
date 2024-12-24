@@ -8,7 +8,7 @@ from rich.logging import RichHandler
 from regvelo import datasets
 from ._constants import REGISTRY_KEYS
 from ._model import REGVELOVI, VELOVAE
-from ._utils import get_permutation_scores, preprocess_data, prior_GRN, sanity_check
+from ._utils import get_permutation_scores, preprocess_data, set_prior_grn, sanity_check
 from ._perturbation import in_silico_block_simulation,TFScanning_func,TFscreening,abundance_test
 
 # https://github.com/python-poetry/poetry/pull/2366#issuecomment-652418094
@@ -44,7 +44,7 @@ __all__ = [
     "datasets",
     "get_permutation_scores",
     "preprocess_data",
-    "prior_GRN",
+    "set_prior_grn",
     "sanity_check",
     "in_silico_block_simulation",
     "TFScanning_func",

@@ -67,7 +67,7 @@ def preprocess_data(
     return adata
 
 
-def prior_GRN(
+def set_prior_grn(
     adata: AnnData, 
     gt_net: pd.DataFrame
 ) -> AnnData:
@@ -90,8 +90,9 @@ def prior_GRN(
     
     regulator_index = [i in gt_net.columns for i in adata.var.index.values]
     target_index = [i in gt_net.index for i in adata.var.index.values]
-
-    corr_m = 1 - cdist(adata.X.todense().T, adata.X.todense().T, metric='correlation')
+    
+    gex = adata.layers["Ms"]
+    corr_m = 1 - cdist(gex.T, gex.T, metric='correlation')
     corr_m = torch.tensor(corr_m)
     corr_m = corr_m[target_index,]
     corr_m = corr_m[:,regulator_index]
