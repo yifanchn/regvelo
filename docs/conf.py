@@ -15,16 +15,15 @@ sys.path[:0] = [str(HERE.parent), str(HERE / "extensions")]
 
 # -- Project information -----------------------------------------------------
 
-project_name = "regvelo"
-info = metadata(project_name)
+
 package_name = "regvelo"
-author = info["Weixu Wang"]
+author = "Weixu Wang"
 copyright = f"{datetime.now():%Y}, {author}."
-version = info["Version"]
+version = "0.2.0"
 repository_url = "https://github.com/theislab/regvelo"
 
 # The full version, including alpha/beta/rc tags
-release = info["Version"]
+release = "0.2.0"
 
 bibtex_bibfiles = ["references.bib"]
 templates_path = ["_templates"]
