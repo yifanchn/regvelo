@@ -61,12 +61,12 @@ class ModifiedTrainingPlan(TrainingPlan):
         return scvi_loss.loss
 
 class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
-    """Velocity Variational Inference.
+    """Regulatory Velocity Variational Inference.
 
     Parameters
     ----------
     adata
-        AnnData object that has been registered via :func:`~velovi.VELOVI.setup_anndata`.
+        AnnData object that has been registered via :func:`~regvelo.REGVELOVI.setup_anndata`.
     W
         Prior gene regulatory graph (torch.Tensor), with row indicating targets, column indicating regulators.
     regulators
@@ -102,7 +102,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
     auto_regulation
         Estimate self-regulation links in the GRN.
     **model_kwargs
-        Keyword args for :class:`~velovi.VELOVAE`
+        Keyword args for :class:`~regvelo.VELOVAE`
     """
 
     def __init__(
