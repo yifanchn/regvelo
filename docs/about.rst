@@ -45,7 +45,9 @@ Overall, RegVelo allows sampling predicted readouts and velocities from the lear
 Perturbation prediction
 ~~~~~~~~~~~~~~~~~~~
 
-<img src="https://github.com/theislab/regvelo/blob/main/docs/_static/img/perturbation_overview_fig.png?raw=true" alt="RegVelo" width="600" />
+.. image:: https://github.com/theislab/regvelo/blob/main/docs/_static/img/perturbation_overview_fig.png?raw=true
+   :alt: RegVelo perturbation introduction
+   :width: 600px
 
 RegVelo is a generative model that couples cellular dynamics with regulatory networks. 
 We can, thus, perform in silico counterfactual inference to test the cellular response upon unseen perturbations of a TF in the regulatory network: for a trained RegVelo model, 
