@@ -14,6 +14,8 @@
     publisher = {Cold Spring Harbor Laboratory},
 }
 ```
+## Getting started
+Please refer to the [Tutorials](https://regvelo.readthedocs.io/en/latest/index.html)
 
 ## Installation
 
