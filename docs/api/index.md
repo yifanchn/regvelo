@@ -1,7 +1,7 @@
 # API
 
 ```{eval-rst}
-.. currentmodule:: velovi
+.. currentmodule:: regvelo
 ```
 
 ```{eval-rst}
@@ -9,7 +9,7 @@
    :toctree: reference/
    :nosignatures:
 
-   VELOVI
+   REGVELOVI
 ```
 
 ```{eval-rst}
