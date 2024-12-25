@@ -24,8 +24,8 @@ and estimated cell and gene-specific latent times. Importantly, existing methods
 
 .. math::
     \begin{align} 
-    \dot{u}_{g} &= \frac{\mathrm{d} u_{g}(t)}{\mathrm{d} t} = \alpha_{g} \mathbb{I}_{\left \{ t<t_s \right \}} - \beta_{g} u_{g}(t), \\
-    \dot{s}_{g} &= \frac{\mathrm{d} s_{g}(t)}{\mathrm{d} t} = \beta_{g} u_{g}(t) - \gamma_{g} s_{g}(t), 
+    \frac{\mathrm{d} u_{g}(t)}{\mathrm{d} t} =\alpha_{g}(t) - \beta_{g} u_{g}(t), \\
+    \frac{\mathrm{d} s_{g}(t)}{\mathrm{d} t} = \beta_{g} u_{g}(t) - \gamma_{g} s_{g}(t),
     \end{align}
 
 that is now coupled through gene regulation-informed transcription
