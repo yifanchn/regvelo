@@ -9,7 +9,7 @@ Welcome to the RegVelo documentation.
 :maxdepth: 1
 
 api/index
-about
+about/index
 tutorial
 release_notes/index
 references
