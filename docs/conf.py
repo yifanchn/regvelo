@@ -15,7 +15,7 @@ sys.path[:0] = [str(HERE.parent), str(HERE / "extensions")]
 
 # -- Project information -----------------------------------------------------
 
-
+project_name = "regvelo"
 package_name = "regvelo"
 author = "Weixu Wang"
 copyright = f"{datetime.now():%Y}, {author}."
