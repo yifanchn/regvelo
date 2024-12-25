@@ -13,7 +13,7 @@ CellRank employs velocity-based state transition probabilities to predict termin
 enabling precise simulations of transcription factor (TF) knockouts. This synergy allows for the identification of lineage drivers and the prediction of cell fate changes upon genetic perturbations.
 
 
-RegVelo models
+RegVelo model
 ~~~~~~~~~~~~~~~~~~~
 RegVelo leverages deep generative modeling to infer splicing kinetics, transcription rates, and latent cellular time while integrating GRN priors derived from multi-omics data or curated databases. 
 RegVelo incorporates cellular dynamic estimates by first encoding unspliced (*u*) and spliced RNA (*s*) readouts into posterior parameters of a low dimensional latent variable - the cell representation - with a neural network. 
