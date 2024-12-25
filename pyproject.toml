@@ -48,8 +48,9 @@ python-igraph = {version = "*", optional = true}
 scanpy = {version = ">=1.10.3", optional = true}
 scanpydoc = {version = ">=0.5", optional = true}
 scvelo = ">=0.3.2"
-scvi-tools = ">=1.0.0"
+scvi-tools = ">=1.0.0,<1.2.1"
 scikit-learn = ">=0.21.2"
+velovi = ">=0.3.1"
 torchode = ">=0.1.6"
 cellrank = ">=2.0.0"
 matplotlib = ">=3.7.3"
