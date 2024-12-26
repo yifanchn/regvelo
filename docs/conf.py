@@ -26,6 +26,8 @@ repository_url = "https://github.com/theislab/regvelo"
 release = "0.2.0"
 
 bibtex_bibfiles = ["references.bib"]
+bibtex_reference_style = "author_year"
+
 templates_path = ["_templates"]
 nitpicky = True  # Warn about broken links
 needs_sphinx = "4.0"
