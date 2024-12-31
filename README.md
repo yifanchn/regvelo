@@ -5,13 +5,13 @@
 **RegVelo** is a end-to-end framework to infer regulatory cellular dynamics through coupled splicing dynamics. See our [RegVelo manuscript](https://www.biorxiv.org/content/10.1101/2024.12.11.627935v1) to learn more. If you use our tool in your own work, please cite it as
 
 ```
-@article{wang:24,
-    title = {RegVelo: gene-regulatory-informed dynamics of single cells},
-    author = {Wang, Weixu and Hu, Zhiyuan and Weiler, Philipp and Mayes, Sarah and Lange, Marius and Wang, Jingye and Xue, Zhengyuan and Sauka-Spengler, Tatjana Theis, Fabian J.},
-    doi = {10.1101/2024.12.11.627935},
-    url = {https://doi.org/10.1101/2024.12.11.627935},
-    year = {2024},
-    publisher = {Cold Spring Harbor Laboratory},
+@article{wang2024regvelo,
+  title={RegVelo: gene-regulatory-informed dynamics of single cells},
+  author={Wang, Weixu and Hu, Zhiyuan and Weiler, Philipp and Mayes, Sarah and Lange, Marius and Wang, Jingye and Xue, Zhengyuan and Sauka-Spengler, Tatjana and Theis, Fabian J},
+  journal={bioRxiv},
+  pages={2024--12},
+  year={2024},
+  publisher={Cold Spring Harbor Laboratory}
 }
 ```
 ## Getting started
