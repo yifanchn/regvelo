@@ -12,6 +12,12 @@ Further, by coupling with CellRank `Weiler et al. (Nature Methods, 2024) <https:
 CellRank employs velocity-based state transition probabilities to predict terminal cell states, and RegVelo enhances this framework with GRN-informed splicing kinetics, 
 enabling precise simulations of transcription factor (TF) knockouts. This synergy allows for the identification of lineage drivers and the prediction of cell fate changes upon genetic perturbations.
 
+RegVelo's application
+~~~~~~~~~~~~~~~~~~~
+- estimate RNA velocity govarned by gene regulation.
+- infer latent time to indicating cellular differentiation process.
+- estimate velocity intrinsic and extrinsic uncertainty :cite:p:`gayoso2024deep`.
+- estimate regulon perturbation effects via CellRank framework :cite:p:`lange2022cellrank, weiler2024cellrank`.
 
 RegVelo model
 ~~~~~~~~~~~~~~~~~~~
