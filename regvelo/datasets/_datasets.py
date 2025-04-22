@@ -55,7 +55,7 @@ def zebrafish_grn(file_path: Union[str, Path] = "data/zebrafish_nc/prior_GRN.csv
     grn.to_csv(file_path)
     return grn
 
-def murine_nc(file_path: Union[str, Path] = "data/murine_nc/adata_zebrafish_preprocessed.h5ad"):
+def murine_nc(file_path: Union[str, Path] = "data/murine_nc/adata_preprocessed.h5ad"):
     """Mouse neural crest cells.
 
     Single cell RNA-seq datasets of mouse neural crest cell development subset from Qiu, Chengxiang, et al. datasets.
