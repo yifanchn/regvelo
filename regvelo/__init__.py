@@ -6,10 +6,17 @@ from rich.console import Console
 from rich.logging import RichHandler
 
 from regvelo import datasets
+from regvelo import tools as tl
+from regvelo import plotting as pl
+
 from ._constants import REGISTRY_KEYS
 from ._model import REGVELOVI, VELOVAE
 from ._utils import get_permutation_scores, preprocess_data, set_prior_grn, sanity_check
 from ._perturbation import in_silico_block_simulation,TFScanning_func,TFscreening,abundance_test
+
+import sys  # isort:skip
+
+sys.modules.update({f"{__name__}.{m}": globals()[m] for m in ["tl", "pl"]})
 
 # https://github.com/python-poetry/poetry/pull/2366#issuecomment-652418094
 # https://github.com/python-poetry/poetry/issues/144#issuecomment-623927302
