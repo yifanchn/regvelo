@@ -4,16 +4,8 @@ import scanpy as sc
 from anndata import AnnData
 from typing import Any
 
-from .utils import set_plotting_style
 from .utils import calculate_entropy
 
-set_plotting_style(style="scvelo",
-                       dpi_save=400,
-                       dpi=80, 
-                       transpartent=True,
-                       color_map="viridis", 
-                       fontsize=14,
-                       )
 
 def commitment_score(adata : AnnData, 
                      lineage_key : str = "lineages_fwd",

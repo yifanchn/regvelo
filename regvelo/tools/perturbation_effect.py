@@ -8,7 +8,7 @@ def perturbation_effect(
     adata_perturb : AnnData,
     adata : AnnData,
     terminal_state : Union[str, Sequence[str]],
-) -> AnnData:
+    ) -> AnnData:
     """
     Compute change in fate probabilities towards terminal states after perturbation. Negative values correspond to a decrease in
     probabilities, while positive values indicate an increase.

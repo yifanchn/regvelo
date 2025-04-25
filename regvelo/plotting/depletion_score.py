@@ -9,7 +9,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-from .._perturbation import abundance_test
+from ..tools.abundance_test import abundance_test
 
 def depletion_score(adata : AnnData,
                     df : pd.DataFrame,

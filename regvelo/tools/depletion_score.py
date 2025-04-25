@@ -4,7 +4,7 @@ from anndata import AnnData
 from typing import Union, Sequence, Any, Optional, Tuple
 import cellrank as cr
 
-from .._perturbation import abundance_test
+from .abundance_test import abundance_test
 
 def depletion_score(perturbed : dict[str, AnnData],
                     baseline : AnnData,

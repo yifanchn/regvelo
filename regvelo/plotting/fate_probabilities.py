@@ -3,15 +3,6 @@ import cellrank as cr
 from anndata import AnnData
 from typing import Union, Sequence, Any
 
-from .utils import set_plotting_style
-set_plotting_style(style="scvelo",
-                       dpi_save=400,
-                       dpi=80, 
-                       transpartent=True,
-                       color_map="viridis", 
-                       fontsize=14,
-                       )
-
 def fate_probabilities(adata : AnnData,
                        terminal_state : Union[str, Sequence[str]],
                        n_states : int,
