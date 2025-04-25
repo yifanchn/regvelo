@@ -703,7 +703,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
             
         adata = self._validate_anndata(adata)
         latent_time = self.get_latent_time(n_samples=n_samples, batch_size = batch_size)
-        velocities = self.get_velocity(n_samples=n_samples,batch_size = batch_size)
+        velocities = self.get_velocity(n_samples=n_samples, batch_size = batch_size)
 
         t = latent_time.values.copy()
         scaling = 20 / t.max(0)
@@ -714,7 +714,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         
         adata_target.layers["fit_t"] = latent_time.values * scaling[np.newaxis, :]
         adata_target.var['fit_scaling'] = 1.0
-
+        
         return adata_target
 
     @torch.inference_mode()
