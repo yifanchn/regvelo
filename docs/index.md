@@ -10,7 +10,7 @@ Welcome to the RegVelo documentation.
 
 api/index
 about/index
-tutorial
+tutorials.md
 release_notes/index
 references
 ```
