@@ -5,7 +5,7 @@
 # Welcome to the RegVelo documentation.
 
 ```{toctree}
-:maxdepth: 3
+:maxdepth: 1
 :titlesonly: true
 
 about/index
