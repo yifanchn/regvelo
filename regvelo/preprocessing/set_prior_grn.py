@@ -12,69 +12,67 @@ from sklearn.preprocessing import MinMaxScaler
 from scipy.spatial.distance import cdist
 
 def set_prior_grn(adata: AnnData, gt_net: pd.DataFrame, keep_dim: bool = False) -> AnnData:
-    """Constructs a gene regulatory network (GRN) based on ground-truth interactions and gene expression data.
+    """Adds prior gene regulatory network (GRN) information to an AnnData object.
 
     Parameters
     ----------
-    adata
-        An annotated data matrix where `adata.X` contains gene expression data, and `adata.var` has gene identifiers.
-    gt_net
-        A DataFrame representing the ground-truth regulatory network with regulators as columns and targets as rows.
-    keep_dim
-        A boolean variable represeting if keep the output adata has the same dimensions.
+    adata : AnnData
+        Annotated data matrix with gene expression data.
+    gt_net : pd.DataFrame
+        Prior gene regulatory network (targets as rows, regulators as columns).
+    keep_dim : bool, optional
+        If True, output AnnData retains original dimensions. Default is False.
 
     Returns
     -------
-    None. Modifies `AnnData` object to include the GRN information, with network-related metadata stored in `uns`.
+    AnnData
+        Updated AnnData object with GRN stored in .uns["skeleton"].
     """
+    # Identify regulators and targets present in adata
     regulator_mask = adata.var_names.isin(gt_net.columns)
-    regulators = adata.var_names[regulator_mask]
-
     target_mask = adata.var_names.isin(gt_net.index)
+    regulators = adata.var_names[regulator_mask]
     targets = adata.var_names[target_mask]
 
     if keep_dim:
         skeleton = pd.DataFrame(0, index=adata.var_names, columns=adata.var_names, dtype=float)
-        skeleton.loc[
-            list(set(adata.var_names).intersection(gt_net.index)),
-            list(set(adata.var_names).intersection(gt_net.columns)),
-        ] = gt_net.loc[
-            list(set(adata.var_names).intersection(gt_net.index)),
-            list(set(adata.var_names).intersection(gt_net.columns)),
-        ]
+        common_targets = list(set(adata.var_names).intersection(gt_net.index))
+        common_regulators = list(set(adata.var_names).intersection(gt_net.columns))
+        skeleton.loc[common_targets, common_regulators] = gt_net.loc[common_targets, common_regulators]
         gt_net = skeleton.copy()
 
-    # Compute correlation matrix for genes
+    # Compute correlation matrix based on gene expression layer "Ms"
     gex = adata.layers["Ms"]
     correlation = 1 - cdist(gex.T, gex.T, metric="correlation")
+    #correlation = torch.tensor(correlation).float()
     correlation = correlation[np.ix_(target_mask, regulator_mask)]
     correlation[np.isnan(correlation)] = 0
 
-    # Filter ground-truth network and combine with correlation matrix
-    grn = gt_net.loc[targets, regulators] * correlation
+    # Align and combine ground-truth GRN with expression correlation
+    filtered_gt = gt_net.loc[targets, regulators]
+    grn = filtered_gt * correlation
 
-    # Threshold and clean the network
-    grn = (grn.abs() >= 0.01).astype(int)
+    # Binarize the GRN
+    grn = (np.abs(grn) >= 0.01).astype(int)
     np.fill_diagonal(grn.values, 0)  # Remove self-loops
 
     if keep_dim:
-        skeleton = pd.DataFrame(0, index=adata.var_names, columns=adata.var_names, dtype=float)
+        skeleton = pd.DataFrame(0, index=adata.var_names, columns=adata.var_names, dtype=int)
         skeleton.loc[grn.columns, grn.index] = grn.T
     else:
+        # Prune genes with no edges
         grn = grn.loc[grn.sum(axis=1) > 0, grn.sum(axis=0) > 0]
-
-        # Prepare a matrix with all unique genes from the final network
-        genes = grn.index.union(grn.columns).unique()
-        skeleton = pd.DataFrame(0, index=genes, columns=genes, dtype=float)
+        genes = grn.index.union(grn.columns)
+        skeleton = pd.DataFrame(0, index=genes, columns=genes, dtype=int)
         skeleton.loc[grn.columns, grn.index] = grn.T
 
-    # Subset the original data to genes in the network and set final properties
-    adata = adata[:, skeleton.index]
+    # Subset the adata to GRN genes and store in .uns
+    adata = adata[:, skeleton.index].copy()
     skeleton = skeleton.loc[adata.var_names, adata.var_names]
 
     adata.uns["regulators"] = adata.var_names.to_numpy()
     adata.uns["targets"] = adata.var_names.to_numpy()
     adata.uns["skeleton"] = skeleton
-    adata.uns["network"] = np.ones((adata.n_vars, adata.n_vars))
+    adata.uns["network"] = skeleton.copy()
 
     return adata
