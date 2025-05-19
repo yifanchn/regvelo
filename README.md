@@ -31,5 +31,5 @@ conda create -n regvelo-py310 python=3.10 --yes && conda activate regvelo-py310
 Next, install the package with
 
 ```bash
-pip install git+https://github.com/theislab/regvelo.git@main
+pip install git+https://github.com/theislab/regvelo.git@main --no-cache-dir --force-reinstall
 ```
