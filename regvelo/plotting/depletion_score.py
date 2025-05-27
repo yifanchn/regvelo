@@ -45,7 +45,7 @@ def depletion_score(adata : AnnData,
     plt.figure(figsize=figsize)
 
     palette = dict(zip(adata.obs[color_label].cat.categories, adata.uns[f"{color_label}_colors"]))
-    sns.barplot(x='TF', y='Depletion score', hue='Terminal state', data=df, palette=palette, dodge=True, **plot_kwargs)
+    sns.barplot(x=xlabel, y=ylabel, hue='Terminal state', data=df, palette=palette, dodge=True, **plot_kwargs)
 
     for i in range(len(df['TF'].unique()) - 1):
         plt.axvline(x=i + 0.5, color='gray', linestyle='--')

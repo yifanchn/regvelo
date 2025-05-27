@@ -5,6 +5,7 @@ from .in_silico_block_simulation import in_silico_block_simulation
 from .abundance_test import abundance_test
 from .TFScanning_func import TFScanning_func
 from .TFscreening import TFscreening
+from .markov_density_simulation import markov_density_simulation
 
 
 __all__ = [
@@ -15,4 +16,5 @@ __all__ = [
         "abundance_test",
         "TFScanning_func",
         "TFscreening",
+        "markov_density_simulation",
         ]
