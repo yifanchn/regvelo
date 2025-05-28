@@ -16,43 +16,42 @@ url_adata_murine_velocyto = "https://drive.usercontent.google.com/download?id=18
 
 
 def zebrafish_nc(file_path: Union[str, Path] = "data/zebrafish_nc/adata_zebrafish_preprocessed.h5ad"):
-    """Zebrafish neural crest cells.
+    """
+    Load zebrafish neural crest (NC) single-cell RNA-seq dataset.
 
-    Single cell RNA-seq datasets of zebrafish neural crest cell development across 
-    seven distinct time points using ultra-deep Smart-seq3 technique.
+    This dataset contains Smart-seq3 data across seven time points during NC development.
+    Four distinct phases are covered:
+    (1) Specification at the neural plate border (NPB),
+    (2) Epithelial-to-mesenchymal transition (EMT) from the neural tube,
+    (3) Peripheral migration, and
+    (4) Differentiation into distinct cell types.
 
-    There are four distinct phases of NC cell development: 1) specification at the NPB, 2) epithelial-to-mesenchymal
-    transition (EMT) from the neural tube, 3) migration throughout the periphery, 4) differentiation into distinct cell types
-
-    Arguments:
+    Parameters:
     ---------
-    file_path
-        Path where to save dataset and read it from.
+    file_path : str or Path, optional
+        Path to local dataset. Will download from remote URL if not found.
 
     Returns
     -------
-    Returns `adata` object
+    AnnData
+        Annotated data matrix of zebrafish NC cells.
     """
     adata = read(file_path, backup_url=url_adata, sparse=True, cache=True)
     return adata
 
 def zebrafish_grn(file_path: Union[str, Path] = "data/zebrafish_nc/prior_GRN.csv"):
-    """Zebrafish neural crest cells.
+    """
+    Load prior gene regulatory network (GRN) for zebrafish neural crest cells.
 
-    Single cell RNA-seq datasets of zebrafish neural crest cell development across 
-    seven distinct time points using ultra-deep Smart-seq3 technique.
-
-    There are four distinct phases of NC cell development: 1) specification at the NPB, 2) epithelial-to-mesenchymal
-    transition (EMT) from the neural tube, 3) migration throughout the periphery, 4) differentiation into distinct cell types
-
-    Arguments:
+    Parameters:
     ---------
-    file_path
-        Path where to save dataset and read it from.
+    file_path : str or Path
+        Path to save the GRN dataset locally and to read it from.
 
     Returns
     -------
-    Returns `adata` object
+    pd.DataFrame
+        DataFrame representing the GRN.
     """
     grn = pd.read_csv(url_grn, index_col = 0)
     grn.to_csv(file_path)
@@ -60,10 +59,12 @@ def zebrafish_grn(file_path: Union[str, Path] = "data/zebrafish_nc/prior_GRN.csv
 
 def murine_nc(data_type: str = "preprocessed"):
     """
-    Mouse neural crest cells.
+    Load mouse neural crest single-cell RNA-seq dataset (subset of Qiu et al.).
 
-    Single-cell RNA-seq datasets of mouse neural crest cell development, 
-    subset from Qiu, Chengxiang et al.
+    The dataset is available in three variants:
+    - "preprocessed" (default)
+    - "normalized"
+    - "velocyto"
 
     The gene regulatory network (GRN) is saved in `adata.uns["skeleton"]`, 
     which is learned via pySCENIC.

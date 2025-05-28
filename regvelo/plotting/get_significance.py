@@ -2,12 +2,12 @@
 
 def get_significance(pvalue: float) -> str:
     """
-    Return significance annotation for a p-value.
+    Return a significance annotation for a given p-value.
 
     Parameters
     ----------
     pvalue : float
-        P-value to interpret.
+        The p-value to interpret.
 
     Returns
     -------

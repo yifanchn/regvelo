@@ -1,70 +1,72 @@
+import os
+import shutil
 import torch
 import pandas as pd
 import numpy as np
 
-import cellrank as cr
 from anndata import AnnData
 from scvelo import logging as logg
-import os, shutil
 from typing import Dict, Optional, Sequence, Tuple, Union
 
 from .._model import REGVELOVI
-from .utils import split_elements, get_list_name
+from ._utils import split_elements, get_list_name
 from .TFScanning_func import TFScanning_func
-
 
 def TFscreening(
     adata : AnnData, 
     prior_graph : torch.Tensor,
-    lam : Optional[int] = 1,
-    lam2 : Optional[int] = 0,
-    soft_constraint : Optional[bool] = True,
+    lam : int = 1,
+    lam2 : int = 0,
+    soft_constraint : bool = True,
     TF_list : Optional[Union[str, Sequence[str], Dict[str, Sequence[str]], pd.Series]] = None,
     cluster_label : Optional[str] = None,
     terminal_states : Optional[Union[str, Sequence[str], Dict[str, Sequence[str]], pd.Series]] = None,
     KO_list : Optional[Union[str, Sequence[str], Dict[str, Sequence[str]], pd.Series]] = None,
-    n_states : Optional[Union[int, Sequence[int]]] = 8,
-    cutoff : Optional[float] = 1e-3,
-    max_nruns : Optional[float] = 5,
-    method : Optional[str] = "likelihood",
+    n_states : Union[int, Sequence[int]] = 8,
+    cutoff : float = 1e-3,
+    max_nruns : int = 5,
+    method : str = "likelihood",
     dir : Optional[str] = None
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """ 
-    Perform in silico TF regulon knock-out screening
+    Perform repeated in silico TF regulon knock-out screening.
 
     Parameters
     ----------
-    adata
-        Anndata objects.
-    prior_graph
-        A prior graph for RegVelo inference
-    lam
-        Regularization parameter for controling the strengths of adding prior knowledge.
-    lam2
-        Regularization parameter for controling the strengths of L1 regularization to the Jacobian matrix.
-    soft_constraint
-        Apply soft constraint mode RegVelo.
-    TF_list
+    adata : AnnData
+        Annotated data matrix with `Ms` and `Mu` layers.
+    prior_graph : torch.Tensor
+        A prior graph for RegVelo inference.
+    lam : int, optional
+        Regularization parameter for controling the strengths of adding prior knowledge (default: 1).
+    lam2 : int, optional
+        Regularization parameter for controling the strengths of L1 regularization to the Jacobian matrix (default: 0).
+    soft_constraint : bool, optional
+        Whether to apply soft constraints on prior graph (default: True).
+    TF_list : list, optional
         The TF list used for RegVelo inference.
-    cluster_label
+    cluster_label : str, optional
         Key in :attr:`~anndata.AnnData.obs` to associate names and colors with :attr:`terminal_states`.
-    terminal_states
-        subset of :attr:`macrostates`.
-    KO_list
-        List of TF combinations to simulate knock-out (KO) effects
-        can be single TF e.g. geneA
-        or double TFs e.g. geneB_geneC
-        example input: ["geneA","geneB_geneC"]
-    n_states
+    terminal_states : list, optional
+        Subset of :attr:`macrostates`.
+    KO_list : list, optional
+        List of TF names or combinations (e.g., ["geneA", "geneB_geneC"]).
+    n_states : int or list, optional
         Number of macrostates to compute.
-    cutoff
-        The threshold for determing which links need to be muted (<cutoff).
-    max_nruns
-        maximum number of runs, soft constrainted RegVelo model need to have repeat runs to get stable perturbation results.
-    dir
-        the location to save temporary datasets.
-    method
-        Use either `likelihood` or `t-statistics` to quantify perturbation effects
+    cutoff : float, optional
+        Threshold to zero out TF-target links during knock-out (default: 1e-3).
+    max_nruns : int, optional
+        Maximum number of runs, soft constrainted RegVelo model need to have repeat runs to get stable perturbation results.
+        Set to 1 if `soft_constraint=False`.
+    method : {"likelihood", "t-statistics"}, optional
+        Metric to assess perturbation effect (default: "likelihood").
+    dir : str, optional
+        Directory to store intermediate model files and results.
+
+    Returns
+    -------
+    Tuple[pd.DataFrame, pd.DataFrame]
+        Two DataFrames containing the average coefficients and p-values of the perturbation effects across all runs.
     """
 
     if soft_constraint is not True:

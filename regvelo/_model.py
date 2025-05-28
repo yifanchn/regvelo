@@ -61,7 +61,8 @@ class ModifiedTrainingPlan(TrainingPlan):
         return scvi_loss.loss
 
 class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
-    """Regulatory Velocity Variational Inference.
+    """
+    Regulatory Velocity Variational Inference.
 
     Parameters
     ----------
@@ -239,7 +240,8 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         optimizer: str = "AdamW",
         **trainer_kwargs,
     ):
-        """Train the model.
+        """
+        Train the model.
         The code is adapted from veloVI repository (https://github.com/YosefLab/velovi/)
 
         Parameters
@@ -318,7 +320,8 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         return_mean: bool = True,
         return_numpy: Optional[bool] = None,
     ) -> Union[np.ndarray, pd.DataFrame]:
-        """Returns the cells by genes latent time. 
+        """
+        Returns the cells by genes latent time. 
         The code is adapted from veloVI repository (https://github.com/YosefLab/velovi/)
 
         Parameters
@@ -426,7 +429,8 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         return_numpy: Optional[bool] = None,
         clip: bool = True,
     ) -> Union[np.ndarray, pd.DataFrame]:
-        """Returns cells by genes velocity estimates.
+        """
+        Returns cells by genes velocity estimates.
 
         Parameters
         ----------
@@ -685,7 +689,8 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         adata: Optional[AnnData] = None,
         batch_size: Optional[int] = None,
     ) -> AnnData:
-        """Returns the processed anndata object containing velocity and latent time layers
+        """
+        Returns the processed anndata object containing velocity and latent time layers
         The code is adapted from veloVI repository (https://github.com/YosefLab/velovi/)
 
         Parameters
@@ -786,7 +791,8 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
     def get_permutation_scores(
         self, labels_key: str, adata: Optional[AnnData] = None
     ) -> Tuple[pd.DataFrame, AnnData]:
-        """Compute permutation scores.
+        """
+        Compute permutation scores.
 
         Parameters
         ----------
@@ -850,7 +856,9 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
     def _shuffle_layer_celltype(
         self, adata_manager: AnnDataManager, labels_key: str, registry_key: str
     ) -> AnnData:
-        """Shuffle cells within cell types for each gene."""
+        """
+        Shuffle cells within cell types for each gene.
+        """
         from scvi.data._constants import _SCVI_UUID_KEY
 
         bdata = adata_manager.adata.copy()
@@ -917,7 +925,8 @@ def _compute_directional_statistics_tensor(
 def _directional_statistics_per_cell(
     tensor: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Internal function for parallelization.
+    """
+    Internal function for parallelization.
 
     Parameters
     ----------
@@ -942,13 +951,17 @@ def _directional_statistics_per_cell(
 
 
 def _centered_unit_vector(vector: np.ndarray) -> np.ndarray:
-    """Returns the centered unit vector of the vector."""
+    """
+    Returns the centered unit vector of the vector.
+    """
     vector = vector - np.mean(vector)
     return vector / np.linalg.norm(vector)
 
 
 def _cosine_sim(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
-    """Returns cosine similarity of the vectors."""
+    """
+    Returns cosine similarity of the vectors.
+    """
     v1_u = _centered_unit_vector(v1)
     v2_u = _centered_unit_vector(v2)
     return np.clip(np.dot(v1_u, v2_u), -1.0, 1.0)
