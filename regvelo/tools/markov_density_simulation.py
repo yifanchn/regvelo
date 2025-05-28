@@ -1,18 +1,18 @@
 import numpy as np
 import pandas as pd
+from typing import Union, Sequence, Tuple
 
 def markov_density_simulation(
-    adata : "AnnData",
+    adata : AnnData,
     T : np.ndarray, 
-    start_indices, 
-    terminal_indices, 
-    terminal_states,
+    start_indices : Union[Sequence[int], np.ndarray],
+    terminal_indices : Union[Sequence[int], np.ndarray],
+    terminal_states : Sequence[str],
     n_steps : int = 100, 
     n_simulations : int = 200, 
     method: str = "stepwise", 
     seed : int = 0,
-):
-
+    ) -> Tuple[pd.Series, pd.Series]:
     """
     Simulate transitions on a velocity-derived Markov transition matrix.
 
@@ -33,9 +33,9 @@ def markov_density_simulation(
     n_simulations : int, optional
         Number of simulations per starting cell (default: 200).
     method : {'stepwise', 'one-step'}, optional
-        Simulation method to use:
-        - 'stepwise': simulate trajectories step by step.
-        - 'one-step': sample directly from T^n.
+        Simulation method:
+            - 'stepwise': simulate each trajectory step by step.
+            - 'one-step': sample directly from T^n.
     seed : int, optional
         Random seed for reproducibility (default: 0).
 
@@ -47,12 +47,12 @@ def markov_density_simulation(
         Proportion of simulations that ended in each terminal cell.
     """
     np.random.seed(seed)
-    
     T = np.asarray(T)
+    n_cells = T.shape[0]
+
     start_indices = np.asarray(start_indices)
     terminal_indices = np.asarray(terminal_indices)
     terminal_set = set(terminal_indices)
-    n_cells = T.shape[0]
 
     arrivals_array = np.zeros(n_cells, dtype=int)
 

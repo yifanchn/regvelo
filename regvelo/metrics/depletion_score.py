@@ -1,40 +1,38 @@
-import torch
 import pandas as pd
 from anndata import AnnData
-from typing import Union, Sequence, Any, Optional, Tuple
+from typing import Union, Sequence, Any, Tuple, Dict
 import cellrank as cr
 
 from .abundance_test import abundance_test
 
-def depletion_score(perturbed : dict[str, AnnData],
-                    baseline : AnnData,
-                    terminal_state : Union[str, Sequence[str]],
-                    **kwargs : Any,
-                    ) -> Tuple[pd.DataFrame, dict[str, AnnData]]:
+def depletion_score(
+        perturbed : Dict[str, AnnData],
+        baseline : AnnData,
+        terminal_state : Union[str, Sequence[str]],
+        **kwargs : Any,
+        ) -> Tuple[pd.DataFrame, Dict[str, AnnData]]:
     """
     Compute depletion scores.
 
     Parameters
     ----------
-    perturbed : dict[str, AnnData]
+    perturbed : dict of str -> AnnData
         Dictionary mapping TF candidates to their perturbed AnnData objects.
     baseline : AnnData
-        Annotated data matrix. Fate probabilities already computed.
+        Annotated data matrix with precomputed fate probabilities (under key `'lineages_fwd'`).
     terminal_state : str or Sequence[str]
-        List of terminal states to compute probabilities for.
-    kwargs : Any
-        Optional
-        Additional keyword arguments passed to CellRank and plot functions.
+        One or more terminal states for which depletion scores are computed.
+    **kwargs
+        Additional keyword arguments passed to CellRank estimator methods:
+        - For `compute_macrostates`: "n_states", "n_cells", "cluster_key", "method"
+        - For `compute_fate_probabilities`: "solver", "tol"
 
     Returns
     -------
     Tuple[pd.DataFrame, dict[str, AnnData]]
-        A tuple containing:
-
-        - **df** – Summary of depletion scores and associated statistics.
-        - **adata_perturb_dict** – Dictionary mapping TFs to their perturbed AnnData objects.
+        - DataFrame summarizing depletion scores and significance statistics.
+        - Updated dictionary mapping TFs to perturbed AnnData objects with cell fate probabilities.
     """
-
     macro_kwargs = {k: kwargs[k] for k in ("n_states", "n_cells", "cluster_key", "method") if k in kwargs}
     compute_fate_probabilities_kwargs = {k: kwargs[k] for k in ("solver", "tol") if k in kwargs}
 

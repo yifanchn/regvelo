@@ -1,31 +1,24 @@
 
-from pathlib import Path
-from typing import Optional, Union
-from urllib.request import urlretrieve
-
-import torch
 import numpy as np
 import pandas as pd
-import scvelo as scv
 from anndata import AnnData
-from sklearn.preprocessing import MinMaxScaler
-from scipy.spatial.distance import cdist
 
-def sanity_check(
-       adata : AnnData,
-    ) -> AnnData:
-    
+def sanity_check(adata : AnnData, max_iter : int = 1000) -> AnnData:
     """
-    Sanity check
-
-    This function helps to ensure each gene will have at least one regulator.
+    Ensure that all genes in the AnnData object have a least one regulator.
 
     Parameters
     ----------
-    adata
-        Annotated data matrix.
+    adata : AnnData
+        Annotated data matrix containing gene expression data and regulatory network information.
+    max_iter : int, optional
+        Maximum number of refinement iterations (default: 1000).
+
+    Returns
+    -------
+    AnnData
+        Updated AnnData object with refined regulatory network and gene names.
     """
-    
     gene_name = adata.var.index.tolist()
     full_name = adata.uns["regulators"]
     index = [i in gene_name for i in full_name]
@@ -45,7 +38,7 @@ def sanity_check(
     adata.uns["network"] = W
 
     ###
-    for i in range(1000):
+    for i in range(max_iter):
         if adata.uns["skeleton"].sum(0).min()>0:
             break
         else:

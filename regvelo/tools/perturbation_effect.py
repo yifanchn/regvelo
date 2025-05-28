@@ -25,8 +25,9 @@ def perturbation_effect(
     Returns
     -------
     AnnData
-        Annotated data matrix with the following added:
-        - `terminal state perturbation` : Change in fate probabilities towards terminal state after perturbation.
+        The original `adata` object updated with `.obs` columns:
+        - `"perturbation effect on <state>"` for each state in `terminal_state`,
+          containing the difference in fate probabilities after perturbation.
     """
 
     if isinstance(terminal_state, str):

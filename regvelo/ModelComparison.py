@@ -16,7 +16,7 @@ import scvelo as scv
 
 
 from .tools.set_output import set_output
-from .tools._tsi import get_tsi_score
+from .metrics._tsi import get_tsi_score
 
 
 # Packages used for data type validation
@@ -24,32 +24,36 @@ from typing import List, Optional, Union, Dict
 from anndata import AnnData
 
 class ModelComparison:
-    """Compare different types of RegVelo models : cite:p: `Wang2025`.
-        
-        This class is used to compare different RegVelo models with different optimization mode (soft, hard, soft_regularized) and under different normalization factor lamda2.
-        User can evaluate and visulize competence of different types of models based on various side information (Real time, Pseudo Time, Stemness Score, Terminal States Identification, Cross Boundary Correctness) of cell.
-        Finally, it will return a barplot with best performed model marked, and its performance will also be highlighted by significance test.
-        
-        Examples
-        ----------
-        See notebook.
-        
+    """
+    Compare different types of RegVelo models : cite:p: `Wang2025`.
+    
+    This class is used to compare different RegVelo models with different optimization mode (soft, hard, soft_regularized) and under different normalization factor lamda2.
+    User can evaluate and visulize competence of different types of models based on various side information (Real time, Pseudo Time, Stemness Score, Terminal States Identification, Cross Boundary Correctness) of cell.
+    Finally, it will return a barplot with best performed model marked, and its performance will also be highlighted by significance test.
+    
+    Examples
+    ----------
+    See notebook.
+    
+    """
+    def __init__(
+            self,
+            terminal_states: Optional[List[str]] = None,
+            state_transition: Optional[Dict[str, str]] = None,
+            n_states: Optional[int] = None
+            ) -> None:
         """
-    def __init__(self,
-                 terminal_states: List = None,
-                 state_transition: Dict = None,
-                 n_states: int = None):
-        """Initialize parameters in comparision object.
+        Initialize parameters in comparision object.
         
         Parameters
         ----------
-        terminal_states
+        terminal_states : List[str], optional
             A list records all terminal states among all cell types. 
             This parameter is not necessary if you don't use TSI as side_information. Please make sure they are consistent with information stored in 'side_key' under TSI mode.
-        state_transition
+        state_transition : Dict[str, str], optional
             A dict records all possible state transition relationships among all cell types.
             This parameter is not necessary if you don't use CBC as side_information. Please make sure they are consistent with information stored in 'side_key' under CBC mode.
-        n_state
+        n_state : int, optional
             A integer provide the number of cell clusters in total.
             This parameter is not necessary if you don't use TSI as side_information.
             
@@ -74,12 +78,30 @@ class ModelComparison:
         }
         self.MODEL_TRAINED = {}
     
-    def validate_input(self,
-                       adata: AnnData,
-                       model_list: List[str] = None,
-                       side_information: str = None,
-                       lam2: Union[List[float], float] = None,
-                       side_key: str = None) -> None:
+    def validate_input(
+            self,
+            adata: AnnData,
+            model_list: Optional[List[str]] = None,
+            side_information: Optional[str] = None,
+            lam2: Optional[Union[List[float], float]] = None,
+            side_key: Optional[str] = None
+            ) -> None:
+        """
+        Validate inputs to ensure proper types and required attributes.
+
+        Parameters
+        ----------
+        adata : AnnData
+            Annotated data object with required layers and metadata.
+        model_list : list of str, optional
+            List of models to validate against valid types.
+        side_information : str, optional
+            Type of side information to evaluate model performance.
+        lam2 : float or list of float, optional
+            Regularization strengths for soft_regularized models.
+        side_key : str, optional
+            Column key in `adata.obs` corresponding to side information.
+        """
         
         # 1.Validate adata
         if not isinstance(adata, AnnData):
@@ -135,30 +157,37 @@ class ModelComparison:
                     if side_key not in adata.obs:
                         raise TypeError(f"Default side_key: {side_key} not found in adata.obs, please input it manualy with parameter: side_key")
     
-    def min_max_scaling(self,x):
+    def min_max_scaling(self, x : np.ndarray) -> np.ndarray:
+        """
+        Min-max normalize a numpy array.
+        """
         return (x - np.min(x)) / (np.max(x) - np.min(x)) 
     
     def train(
         self,
         adata: AnnData,
         model_list: List[str],
-        lam2: Union[List[float], float] = None,
+        lam2: Optional[Union[List[float], float]] = None,
         n_repeat: int = 1
-    ) -> List:
-        """Train all the possible models given by users, and stored them in a dictionary, where users can reach them easily and deal with them in batch.If there are already model trained and saved before, they won't be removed.
+    ) -> List[str]:
+        """
+        Train all the possible models given by users, and stored them in a dictionary, where users can reach them easily and deal with them in batch.If there are already model trained and saved before, they won't be removed.
         
         Parameters
         ----------
-        adata
+        adata : AnnData
             The annotated data matrix. After input of adata, the object will store it as self variable.
-        model_list
+        model_list : list of str
             The list of valid model type, including 'Soft', 'Hard', 'Soft_regularized'
-        lam2
+        lam2 : float or list of float, optional
             Normalization factor used under 'soft_regularized' mode. A float or a list of float number in range of (0,1)
-            
+        n_repeat : int
+            Number of training repetitions for each model configuration.
+
         Returns
         ----------
-        A dictionary key names, represent to all models trained in this step. 
+        List[str]
+            A dictionary key names, represent to all models trained in this step. 
         
         """
         self.validate_input(adata, model_list = model_list, lam2 = lam2)
@@ -210,21 +239,23 @@ class ModelComparison:
     
     def evaluate(
         self,
-        side_information: str,
-        side_key:str = None
+        side_information : str,
+        side_key : Optional[str] = None
         ) -> pd.DataFrame:
-        """Evaluate all of trained model under one specific side_information mode, For example, if user know the exact time or stage of cells, user can choose 'Real_Time' as reference; If users has used Pseudotime calculator such as CellRank beforehand, they can also choose 'Pseudo_Time' as reference.
+        """
+        Evaluate all of trained model under one specific side_information mode, For example, if user know the exact time or stage of cells, user can choose 'Real_Time' as reference; If users has used Pseudotime calculator such as CellRank beforehand, they can also choose 'Pseudo_Time' as reference.
         
         Parameters
         ----------
-        side_information
+        side_information : str
             User can choose perspectives to compare RegVelo models, including 'Real_Time', 'Pseudo_Time', 'Stemness_Score','TSI','CBC'.
-        side_key
+        side_key : str, optional
             Column name of adata.obs which used to store information of selected side_information. For 'Pseudo_Time' and 'Stemness_Score', we provide default side_key, but you can also choose your own side_key as input.
         
         Returns
         ----------
-        A dataframe records evaluation performance of all models.
+        pd.DataFrame
+            A dataframe records evaluation performance of all models.
         """
         self.validate_input(self.ADATA, side_information=side_information, side_key=side_key)
         correlations = []
@@ -250,8 +281,26 @@ class ModelComparison:
         self,
         adata: AnnData,
         side_information: str,
-        side_key: str = None
-    ):
+        side_key: Optional[str] = None
+    ) -> float:
+        """
+        Compute the performance metric for a model.
+
+        Parameters
+        ----------
+        adata : AnnData
+            Annotated data object.
+        side_information : str
+            Type of side information to evaluate model performance.
+        side_key : str, optional
+            Column key in `adata.obs` corresponding to side information.
+
+        Returns
+        ----------
+        float
+            Evaluation score.
+        """
+
         if side_information in ['Pseudo_Time', 'Stemness_Score', 'Real_Time']:
             if side_information in ['Pseudo_Time', 'Stemness_Score'] and side_key is None:
                 side_key = self.side_info_dict[side_information]
@@ -279,19 +328,20 @@ class ModelComparison:
     
     def plot_results(
         self,
-        side_information,
-        figsize = (6, None),
-        palette = 'lightpink'
-    ):
-        """Visualize comparision result by barplot with scatters. The significant mark will only show with n_repeats more than 3, and p < 0.05.
+        side_information : str,
+        figsize : Tuple[float, Optional[float]] = (6, None),
+        palette : str = 'lightpink'
+        ) -> None:
+        """
+        Visualize comparision result by barplot with scatters. The significant mark will only show with n_repeats more than 3, and p < 0.05.
         
         Paramters
         ----------
-        side_information
+        side_information : str
             Here choose the side_information you wish to visulize, which must be performed in 'evaluation' step in advance.
-        figsize
+        figsize : tuple
             You can choose the size of figure. Default is (6,None), which means the height of the plot are set to change with the number of models.
-        palette
+        palette : str
             You can choose the color of barplot.
         
         Returns
@@ -384,7 +434,20 @@ class ModelComparison:
         plt.tight_layout()
         plt.show()
         
-    def get_significance(self, pvalue):
+    def get_significance(self, pvalue : float) -> str:
+        """
+        Convert p-value to significance symbol.
+
+        Parameters
+        ----------
+        pvalue : float
+            P-value from significance test.
+
+        Returns
+        -------
+        str
+            Significance symbol ('*', '**', '***', or 'ns').
+        """
         if pvalue < 0.001:
             return "***"
         elif pvalue < 0.01:
@@ -396,13 +459,35 @@ class ModelComparison:
     
     def _draw_significance_marker(
             self,
-            ax,
-            start,
-            end,
-            significance,
-            bracket_height=0.05,
-            linewidth=1.2,
-            text_offset=0.05):
+            ax : plt.Axes,
+            start : float,
+            end : float,
+            significance : str,
+            bracket_height : float = 0.05,
+            linewidth : float = 1.2,
+            text_offset : float = 0.05
+            ) -> None:
+        """
+        Draw a significance marker between bars in a plot.
+
+        Parameters
+        ----------
+        ax : plt.Axes
+            Matplotlib axis to draw on.
+        start : float
+            Start y-position.
+        end : float
+            End y-position.
+        significance : str
+            Significance label to annotate.
+        bracket_height : float
+            Height of the significance bracket.
+        linewidth : float
+            Line width of the bracket.
+        text_offset : float
+            Offset of the significance text.
+        """
+        ...
         
         if start > end:
             start, end = end, start
