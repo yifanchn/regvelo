@@ -1,64 +1,51 @@
 
+import torch
 import pandas as pd
 from anndata import AnnData
-from typing import Any
+from typing import Union, Sequence, Any, Optional
+import cellrank as cr
 
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-def depletion_score(
-        adata : AnnData,
-        df : pd.DataFrame,
-        color_label : str = "celltype_cluster",
-        **kwargs : Any,
-        ) -> None:
+from ..tools.abundance_test import abundance_test
+
+def depletion_score(adata : AnnData,
+                    df : pd.DataFrame,
+                    color_label : str = "celltype_cluster",
+                    **kwargs : Any,
+                    ) -> None:
     """
-    Plot depletion scores for transcription factors across terminal states.
+    Plot depletion scores.
 
     Parameters
     ----------
     adata : AnnData
-        Annotated data matrix of the unperturbed system, used to extract color palette info.
+        Annotated data matrix of original model.
     df : pandas.DataFrame
-        DataFrame containing columns "TF", "Depletion score", and "Terminal state".
-    color_label : str, optional, default: "celltype_cluster"
-        Key in `adata.obs` used to extract categorical color palette from `adata.uns`.
-    **kwargs : Any,
-        Additional keyword arguments, including:
-        - fontsize : int, default 14
-        - figsize : tuple, default (12, 6)
-        - xlabel : str, default "TF"
-        - ylabel : str, default "Depletion score"
-        - legend_loc : str, default "center left"
-        - legend_bbox : tuple, default (1.02, 0.5)
-
-    Returns
-    -------
-    None
-        Displays a searborn barplot.
+    color_label : str
+        Used for color palette
+    kwargs : Any
+        Optional   
+        Additional keyword arguments passed to CellRank and plot functions.
     """
+
     fontsize = kwargs.get("fontsize", 14)
     figsize = kwargs.get("figsize", (12, 6))
-    xlabel = kwargs.get("xlabel", "TF")
-    ylabel = kwargs.get("ylabel", "Depletion score")
+
     legend_loc = kwargs.get("legend_loc", "center left")
     legend_bbox = kwargs.get("legend_bbox", (1.02, 0.5))
+
+    xlabel = kwargs.get("xlabel", "TF")
+    ylabel = kwargs.get("ylabel", "Depletion score")
 
     plot_kwargs = {k: kwargs[k] for k in ("ax",) if k in kwargs}
 
     plt.figure(figsize=figsize)
 
     palette = dict(zip(adata.obs[color_label].cat.categories, adata.uns[f"{color_label}_colors"]))
-    sns.barplot(
-        x=xlabel, 
-        y=ylabel, 
-        hue='Terminal state', 
-        data=df, 
-        palette=palette, 
-        dodge=True, 
-        **plot_kwargs
-        )
+    sns.barplot(x=xlabel, y=ylabel, hue='Terminal state', data=df, palette=palette, dodge=True, **plot_kwargs)
 
     for i in range(len(df['TF'].unique()) - 1):
         plt.axvline(x=i + 0.5, color='gray', linestyle='--')
@@ -73,7 +60,8 @@ def depletion_score(
         bbox_to_anchor=legend_bbox, 
         loc=legend_loc,
         borderaxespad=0
-        )
+    )
+
 
     plt.tight_layout()
     plt.show()

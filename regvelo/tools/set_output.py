@@ -1,6 +1,8 @@
 import numpy as np
+
 from anndata import AnnData
-from typing import Any, Optional
+from typing import Any
+
 
 # Code mostly taken from veloVI reproducibility repo
 # https://yoseflab.github.io/velovi_reproducibility/estimation_comparison/simulation_w_inferred_rates.html
@@ -10,11 +12,10 @@ def set_output(
     adata : AnnData, 
     vae : Any, 
     n_samples: int = 30, 
-    batch_size: Optional[int] = None,
+    batch_size: int | None = None
     ) -> None:
     """
-    Add RegVelo model inference results to an AnnData object.
-
+    Add inference results to adata.
     Parameters
     ----------
     adata : AnnData
@@ -24,7 +25,7 @@ def set_output(
     n_samples : int, optional
         Number of posterior samples to use for estimation. Default is 30.
     batch_size : int, optional
-        Minibatch size for data loading into model. If None, uses `scvi.settings.batch_size`.
+        Minibatch size for data loading into model. Defaults to `scvi.settings.batch_size`.
     """
     
     latent_time = vae.get_latent_time(n_samples=n_samples, batch_size=batch_size)

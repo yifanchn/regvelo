@@ -17,7 +17,6 @@ import torch.nn.utils.prune as prune
 torch.backends.cudnn.benchmark = True
 
 def _softplus_inverse(x: np.ndarray) -> np.ndarray:
-    """Inverse of softplus function for initialization."""
     x = torch.from_numpy(x)
     x_inv = torch.where(x > 20, x, x.expm1().log()).numpy()
     return x_inv
@@ -32,8 +31,7 @@ class ThresholdPruning(prune.BasePruningMethod):
 		return torch.abs(tensor) > self.threshold
     
 class DecoderVELOVI(nn.Module):
-    """
-    Decodes data from latent space of ``n_input`` dimensions ``n_output``dimensions.
+    """Decodes data from latent space of ``n_input`` dimensions ``n_output``dimensions.
 
     Uses a fully-connected neural network of ``n_hidden`` layers.
 

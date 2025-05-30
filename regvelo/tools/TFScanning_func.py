@@ -1,15 +1,17 @@
-import numpy as np
-import pandas as pd
 import torch
+import pandas as pd
+import numpy as np
 
 import cellrank as cr
 from anndata import AnnData
 from scvelo import logging as logg
+import os, shutil
 from typing import Dict, Optional, Sequence, Tuple, Union
 
 from .._model import REGVELOVI
-from ._utils import split_elements, combine_elements
-from ..metrics.abundance_test import abundance_test
+from .utils import split_elements, combine_elements
+from .abundance_test import abundance_test
+
 
 def TFScanning_func(
     model : str, 
@@ -18,9 +20,9 @@ def TFScanning_func(
     terminal_states : Optional[Union[str, Sequence[str], Dict[str, Sequence[str]], pd.Series]] = None,
     KO_list : Optional[Union[str, Sequence[str], Dict[str, Sequence[str]], pd.Series]] = None,
     n_states : Optional[Union[int, Sequence[int]]] = None,
-    cutoff : Optional[Union[float, Sequence[float]]] = 1e-3,
-    method : str = "likelihood",
-    combined_kernel : bool = False,
+    cutoff : Optional[Union[int, Sequence[int]]] = 1e-3,
+    method : Optional[str] = "likelihood",
+    combined_kernel : Optional[bool] = False,
     ) -> Dict[str, Union[float, pd.DataFrame]]:
 
     """ 
@@ -28,30 +30,29 @@ def TFScanning_func(
 
     Parameters
     ----------
-    model : str
-        Path to the saved RegVelo model.
-    adata : AnnData
-        Annotated data matrix.
-    cluster_label : str, optional
+    model
+        The saved address for the RegVelo model.
+    adata
+        Anndata objects.
+    cluster_label
         Key in :attr:`~anndata.AnnData.obs` to associate names and colors with :attr:`terminal_states`.
-    terminal_states : list or dict, optional
-        Subset of :attr:`macrostates`.
-    KO_list : list or dict, optional
-        List of TF names or combinations (e.g., ["geneA", "geneB_geneC"]).
-    n_states : int or list, optional
+    terminal_states
+        subset of :attr:`macrostates`.
+    KO_list
+        List of TF combinations to simulate knock-out (KO) effects
+        Can be single TF e.g. geneA
+        or double TFs e.g. geneB_geneC
+        example input: ["geneA","geneB_geneC"]
+    n_states
         Number of macrostates to compute.
-    cutoff : float or list, optional
-        Threshold to mask regulatory weights (default: 1e-3).
-    method : {"likelihood", "t-statistics"}, optional
-        Method for quantifying perturbation effect (default: "likelihood").
-    combined_kernel : bool, optional
-        Whether to use a combined kernel (0.8*VelocityKernel + 0.2*ConnectivityKernel)
-
-    Returns
-    -------
-    dict
-        Dictionary with keys 'TF', 'coefficient', and 'pvalue' summarizing KO effects.
+    cutoff
+        The threshold for determing which links need to be muted,
+    method
+        Quantify perturbation effects via `likelihood` or `t-statistics`
+    combined_kernel
+        Use combined kernel (0.8*VelocityKernel + 0.2*ConnectivityKernel)
     """
+
     reg_vae = REGVELOVI.load(model, adata)
     adata = reg_vae.add_regvelo_outputs_to_adata(adata = adata)
     raw_GRN = reg_vae.module.v_encoder.fc1.weight.detach().clone()

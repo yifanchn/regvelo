@@ -1,22 +1,19 @@
 from typing import Any, List, Set
-from anndata import AnnData 
+
+from anndata import AnnData
 
 
 def generate_sequence(k: int, n: int) -> List[int]:
-    """
-    Generate a sequence from 1 to k. If the length of the sequence is less than n, the remaining positions are filled with the value k.
+    """Generates a sequence of numbers from 1 to k. If the length of the sequence is less than n, the remaining positions are filled with the value k.
 
     Parameters
     ----------
-    k : int 
-        Maximum value in the initial sequence, which will be the last value in the sequence.
-    n : int 
-        Desired length of the output sequence.
+        k: The last value to appear in the initial sequence.
+        n: The target length of the sequence.
 
     Returns
     -------
-        List[int] 
-            A list of integers from 1 to k, padded with k to length n if necessary.
+        List[int]: A list of integers from 1 to k, padded with k to length n if necessary.
     """
     sequence = list(range(1, k + 1))
 
@@ -37,29 +34,29 @@ def plot_tsi(
     terminal_states: Set[str],
     cluster_key: str,
     max_states: int = 12,
-    ) -> List[int]:
-    """
-    Compute the number of unique terminal states for each macrostate count.
+) -> List[int]:
+    """Calculate the number of unique terminal states for each macrostate count.
 
     Parameters
     ----------
-    adata : AnnData
-        Annotated data matrix
-    kernel : Any
+    adata
+        Annotated data matrix (e.g., from single-cell experiments).
+    kernel
         Computational kernel used to compute macrostates and predict terminal states.
-    threshold : float
+    threshold
         Stability threshold for predicting terminal states.
-    terminal_states : Set[str]
-        Known terminal states.
-    cluster_key : str
-        Key in `adata.obs` for cluster annotations.
-    max_states : int, optional
-        Maximum number of macrostates to consider, by default 12.
+    terminal_states
+        Set of known terminal state names to match against.
+    cluster_key
+        Key in `adata.obs` that identifies cluster assignments for cells.
+    max_states
+        Maximum number of macrostates to consider. Default is 12.
 
     Returns
     -------
-    list[int]
-        Number of recovered terminal states for each macrostate count.
+    list of int
+        A list where each entry represents the count of unique terminal states found
+        at each macrostate count from 1 to `max_states`.
     """
     # Create a mapping of state identifiers to their corresponding types
     all_states = list(set(adata.obs[cluster_key].tolist()))
@@ -101,28 +98,27 @@ def get_tsi_score(
     terminal_states: Set[str],
     kernel: Any,
     max_states: int = 12,
-    ) -> List[float]:
-    """
-    Calculate the Terminal State Integration (TSI) score for a range of thresholds.
+) -> List[float]:
+    """Calculate the Terminal State Integration (TSI) score for given thresholds.
 
     Parameters
     ----------
-    adata : AnnData
+    adata
         Annotated data matrix (e.g., from single-cell experiments).
-    points : List[float]
+    points
         List of threshold values to evaluate for stability of terminal states.
-    cluster_key : str
-        Key in `adata.obs` for cluster annotations.
-    terminal_states : Set[str]
-        Set of known terminal states for evaluation.
-    kernel : Any
+    cluster_key
+        Key in `adata.obs` to access cluster assignments for cells.
+    terminal_states
+        Set of known terminal state names to match against.
+    kernel
         Computational kernel used to compute macrostates and predict terminal states.
-    max_states : int, optional
-        Maximum number of macrostates to consider, by default 12.
+    max_states
+        Maximum number of macrostates to consider. Default is 12.
 
     Returns
     -------
-    list[float]
+    list of float
         A list of TSI scores, one for each threshold in `points`. Each score represents
         the normalized area under the staircase function compared to the goal sequence.
     """

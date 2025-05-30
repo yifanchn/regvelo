@@ -1,32 +1,32 @@
 
+from pathlib import Path
+from typing import Optional, Union
+from urllib.request import urlretrieve
+
+import torch
 import numpy as np
 import pandas as pd
+import scvelo as scv
 from anndata import AnnData
+from sklearn.preprocessing import MinMaxScaler
 from scipy.spatial.distance import cdist
 
-def set_prior_grn(
-        adata: AnnData, 
-        gt_net: pd.DataFrame, 
-        keep_dim: bool = False
-        ) -> AnnData:
-    """
-    Add a prior gene regulatory network (GRN) to an AnnData object.
-
-    This function aligns a provided gene regulatory network (gt_net) with the gene expression data in the AnnData object (adata).
+def set_prior_grn(adata: AnnData, gt_net: pd.DataFrame, keep_dim: bool = False) -> AnnData:
+    """Adds prior gene regulatory network (GRN) information to an AnnData object.
 
     Parameters
     ----------
     adata : AnnData
         Annotated data matrix with gene expression data.
     gt_net : pd.DataFrame
-        Prior GRN (rows = targets, columns = regulators).
+        Prior gene regulatory network (targets as rows, regulators as columns).
     keep_dim : bool, optional
-        If True, output AnnData retains its original dimensions. Default is False.
+        If True, output AnnData retains original dimensions. Default is False.
 
     Returns
     -------
     AnnData
-        Updated AnnData object with GRN in `.uns["skeleton"]` and `.uns["network"].
+        Updated AnnData object with GRN stored in .uns["skeleton"].
     """
     # Identify regulators and targets present in adata
     regulator_mask = adata.var_names.isin(gt_net.columns)

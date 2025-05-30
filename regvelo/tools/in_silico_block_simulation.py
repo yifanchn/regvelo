@@ -1,5 +1,10 @@
 import torch
+import pandas as pd
+import numpy as np
+
 from anndata import AnnData
+
+import os, shutil
 
 from .._model import REGVELOVI
 
@@ -7,38 +12,30 @@ def in_silico_block_simulation(
         model : str,
         adata : AnnData,
         TF : str,
-        effects : float = 0.0,
-        cutoff : float = 1e-3,
+        effects : int = 0,
+        cutoff : int = 1e-3,
         customized_GRN : torch.Tensor = None
-        ) -> tuple[AnnData, REGVELOVI]:
-    """ 
-    Perform an in silico transcription factor (TF) regulon knock-out by modifying the gene regulatory network (GRN)
-    in a trained RegVelo model and simulating its effect.
+        ) -> tuple:
+    """ Perform in silico TF regulon knock-out
 
     Parameters
     ----------
-    model : str
-        Path to the saved RegVelo model.
-    adata : AnnData
-        Annotated data matrix.
-    TF : str
-        Transcription factor to be knocked out (its regulon will be silenced).
-    effect : float, optional (default: 0.0)
-        Value used to replace the weights of affected GRN links (e.g., 0 for knockout).
-    cutoff : float, optional (default: 1e-3)
-        Threshold to determine which links in the GRN are considered active and should be muted.
-    customized_GRN : toch.Tensor, optional (default: None)
-        A custom perturbed GRN weight matrix to directly replace the default GRN.
-
-    Returns
-    -------
-    tuple
-        - adata_target_perturb : AnnData
-            AnnData object with simulated outputs after perturbation.
-        - reg_vae_perturb : REGVELOVI
-            The perturbed RegVelo model instance.
+    model
+        The saved address for the RegVelo model.
+    adata
+        Anndata objects.
+    TF
+        The candidate TF, need to knockout its regulon.
+    effect
+        The coefficient for replacing the weights in GRN
+    cutoff
+        The threshold for determing which links need to be muted,
+    customized_GRN
+        The customized perturbed GRN
     """
+
     reg_vae_perturb = REGVELOVI.load(model,adata)
+
     perturb_GRN = reg_vae_perturb.module.v_encoder.fc1.weight.detach().clone()
 
     if customized_GRN is None:

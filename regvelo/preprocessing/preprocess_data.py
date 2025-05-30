@@ -2,6 +2,7 @@
 from typing import Optional
 
 import numpy as np
+import pandas as pd
 import scvelo as scv
 from anndata import AnnData
 from sklearn.preprocessing import MinMaxScaler
@@ -13,30 +14,27 @@ def preprocess_data(
     unspliced_layer: Optional[str] = "Mu",
     min_max_scale: bool = True,
     filter_on_r2: bool = True,
-    ) -> AnnData:
-    """
-    Preprocess an AnnData object.
+) -> AnnData:
+    """Preprocess data.
 
-    This function optionally applies min-max scaling to the spliced and unspliced layers,
-    and filters genes based on the velocity regression results (velocity_r2 and gamma).
+    This function removes poorly detected genes and minmax scales the data.
 
     Parameters
     ----------
-    adata : AnnData
+    adata
         Annotated data matrix.
-    spliced_layer : str, optional
-        Key in `adata.layers` corresponding to the spliced layer (default: "Ms").
-    unspliced_layer : str, optional
-        Key in `adata.layers` corresponding to the unspliced layer (default: "Mu").
-    min_max_scale : bool, optional
-        Whether to apply min-max scaling to the spliced and unspliced layers (default: True).
-    filter_on_r2 : bool, optional
-        Whether to filter genes based on the velocity regression results (default: True).
+    spliced_layer
+        Name of the spliced layer.
+    unspliced_layer
+        Name of the unspliced layer.
+    min_max_scale
+        Min-max scale spliced and unspliced
+    filter_on_r2
+        Filter out genes according to linear regression fit
 
     Returns
     -------
-    AnnData
-        Preprocessed AnnData object.
+    Preprocessed adata.
     """
     if min_max_scale:
         scaler = MinMaxScaler()
