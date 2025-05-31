@@ -6,6 +6,7 @@ from rich.console import Console
 from rich.logging import RichHandler
 
 from regvelo import datasets
+from regvelo import metrics as mt
 from regvelo import tools as tl
 from regvelo import plotting as pl
 from regvelo import preprocessing as pp
@@ -49,5 +50,9 @@ __all__ = [
     "VELOVAE",
     "REGISTRY_KEYS",
     "datasets",
+    "mt",
+    "tl",
+    "pl",
+    "pp",
     "ModelComparison"
 ]
