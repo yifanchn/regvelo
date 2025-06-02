@@ -9,29 +9,37 @@ import os, shutil
 from .._model import REGVELOVI
 
 def in_silico_block_simulation(
-        model : str,
-        adata : AnnData,
-        TF : str,
-        effects : int = 0,
-        cutoff : int = 1e-3,
-        customized_GRN : torch.Tensor = None
+        model: str,
+        adata: AnnData,
+        TF: str,
+        effects: int = 0,
+        cutoff: float = 1e-3,
+        customized_GRN: torch.Tensor = None
         ) -> tuple:
-    """ Perform in silico TF regulon knock-out
+    """Perform an in silico transcription factor (TF) regulon knock-out by modifying the gene regulatory network (GRN)
+    in a trained RegVelo model.
 
     Parameters
     ----------
     model
-        The saved address for the RegVelo model.
+        Path to the saved RegVelo model.
     adata
-        Anndata objects.
+        Annotated data matrix.
     TF
-        The candidate TF, need to knockout its regulon.
+        Transcription factor to be knocked out (its regulon will be silenced).
     effect
-        The coefficient for replacing the weights in GRN
+        Coefficient used to replace weights in GRN
     cutoff
-        The threshold for determing which links need to be muted,
+        Threshold to determine which links in the GRN are considered active and should be muted.
     customized_GRN
-        The customized perturbed GRN
+        A custom perturbed GRN weight matrix to directly replace the original GRN.
+
+    Returns
+    -------
+    adata_target_perturb
+        Annotated data matrix with the effects of the in silico perturbation added.
+    reg_vae_perturb
+        The RegVelo model with the perturbed GRN.
     """
 
     reg_vae_perturb = REGVELOVI.load(model,adata)
