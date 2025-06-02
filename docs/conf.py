@@ -20,8 +20,7 @@ package_name = "regvelo"
 author = "Weixu Wang"
 copyright = f"{datetime.now():%Y}, {author}."
 version = "0.2.0"
-#repository_url = "https://github.com/theislab/regvelo"
-repository_url = "https://github.com/yifanchn/regvelo"
+repository_url = "https://github.com/theislab/regvelo"
 
 # The full version, including alpha/beta/rc tags
 release = "0.2.0"
