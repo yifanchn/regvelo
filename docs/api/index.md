@@ -26,13 +26,11 @@
    :toctree: reference/
    :nosignatures:
 
-   TFscreening
+   metrics
+   tools
+   plotting
+   datasets
+   preprocessing
 ```
 
-```{eval-rst}
-.. autosummary::
-   :toctree: reference/
-   :nosignatures:
 
-   in_silico_block_simulation
-```
