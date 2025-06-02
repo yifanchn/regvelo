@@ -26,19 +26,21 @@ from anndata import AnnData
 class ModelComparison:
     """Compare different types of RegVelo models : cite:p: `Wang2025`.
         
-        This class is used to compare different RegVelo models with different optimization mode (soft, hard, soft_regularized) and under different normalization factor lamda2.
-        User can evaluate and visulize competence of different types of models based on various side information (Real time, Pseudo Time, Stemness Score, Terminal States Identification, Cross Boundary Correctness) of cell.
-        Finally, it will return a barplot with best performed model marked, and its performance will also be highlighted by significance test.
-        
-        Examples
-        ----------
-        See notebook.
-        
-        """
-    def __init__(self,
-                 terminal_states: List = None,
-                 state_transition: Dict = None,
-                 n_states: int = None):
+    This class is used to compare different RegVelo models with different optimization mode (soft, hard, soft_regularized) and under different normalization factor lamda2.
+    User can evaluate and visulize competence of different types of models based on various side information (Real time, Pseudo Time, Stemness Score, Terminal States Identification, Cross Boundary Correctness) of cell.
+    Finally, it will return a barplot with best performed model marked, and its performance will also be highlighted by significance test.
+    
+    Examples
+    ----------
+    See notebook.
+    
+    """
+    def __init__(
+            self,
+            terminal_states: list[str] = None,
+            state_transition: dict = None,
+            n_states: int = None
+            ):
         """Initialize parameters in comparision object.
         
         Parameters
@@ -74,12 +76,14 @@ class ModelComparison:
         }
         self.MODEL_TRAINED = {}
     
-    def validate_input(self,
-                       adata: AnnData,
-                       model_list: List[str] = None,
-                       side_information: str = None,
-                       lam2: Union[List[float], float] = None,
-                       side_key: str = None) -> None:
+    def validate_input(
+            self,
+            adata: AnnData,
+            model_list: list[str] = None,
+            side_information: str | None = None,
+            lam2: List[float] | float = None,
+            side_key: str | None = None
+            ) -> None:
         
         # 1.Validate adata
         if not isinstance(adata, AnnData):
@@ -135,22 +139,22 @@ class ModelComparison:
                     if side_key not in adata.obs:
                         raise TypeError(f"Default side_key: {side_key} not found in adata.obs, please input it manualy with parameter: side_key")
     
-    def min_max_scaling(self,x):
+    def min_max_scaling(self, x):
         return (x - np.min(x)) / (np.max(x) - np.min(x)) 
     
     def train(
         self,
         adata: AnnData,
-        model_list: List[str],
-        lam2: Union[List[float], float] = None,
+        model_list: list[str],
+        lam2: list[float] | float = None,
         n_repeat: int = 1
-    ) -> List:
+    ) -> list[str]:
         """Train all the possible models given by users, and stored them in a dictionary, where users can reach them easily and deal with them in batch.If there are already model trained and saved before, they won't be removed.
         
         Parameters
         ----------
         adata
-            The annotated data matrix. After input of adata, the object will store it as self variable.
+            Annotated data matrix. After input of adata, the object will store it as self variable.
         model_list
             The list of valid model type, including 'Soft', 'Hard', 'Soft_regularized'
         lam2
@@ -211,8 +215,8 @@ class ModelComparison:
     def evaluate(
         self,
         side_information: str,
-        side_key:str = None
-        ) -> pd.DataFrame:
+        side_key: str | None = None
+        ) -> tuple[str, pd.DataFrame]:
         """Evaluate all of trained model under one specific side_information mode, For example, if user know the exact time or stage of cells, user can choose 'Real_Time' as reference; If users has used Pseudotime calculator such as CellRank beforehand, they can also choose 'Pseudo_Time' as reference.
         
         Parameters
@@ -224,7 +228,10 @@ class ModelComparison:
         
         Returns
         ----------
-        A dataframe records evaluation performance of all models.
+        df_name
+            A string represents the name of dataframe, which records evaluation performance of all models.
+        df
+            A dataframe records evaluation performance of all models.
         """
         self.validate_input(self.ADATA, side_information=side_information, side_key=side_key)
         correlations = []
@@ -250,7 +257,7 @@ class ModelComparison:
         self,
         adata: AnnData,
         side_information: str,
-        side_key: str = None
+        side_key: str | None = None
     ):
         if side_information in ['Pseudo_Time', 'Stemness_Score', 'Real_Time']:
             if side_information in ['Pseudo_Time', 'Stemness_Score'] and side_key is None:
@@ -279,9 +286,9 @@ class ModelComparison:
     
     def plot_results(
         self,
-        side_information,
-        figsize = (6, None),
-        palette = 'lightpink'
+        side_information: str,
+        figsize: tuple = (6, None),
+        palette: str = 'lightpink'
     ):
         """Visualize comparision result by barplot with scatters. The significant mark will only show with n_repeats more than 3, and p < 0.05.
         
