@@ -1,4 +1,3 @@
-from .depletion_score import depletion_score
 from .perturbation_effect import perturbation_effect
 from .set_output import set_output
 from .in_silico_block_simulation import in_silico_block_simulation
@@ -9,7 +8,6 @@ from .markov_density_simulation import markov_density_simulation
 
 
 __all__ = [
-        "depletion_score",
         "perturbation_effect",
         "set_output",
         "in_silico_block_simulation",
