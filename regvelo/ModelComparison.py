@@ -16,7 +16,7 @@ import scvelo as scv
 
 
 from .tools.set_output import set_output
-from .tools._tsi import get_tsi_score
+from .metrics._tsi import get_tsi_score
 
 
 # Packages used for data type validation
