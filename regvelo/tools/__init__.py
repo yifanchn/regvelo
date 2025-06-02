@@ -1,3 +1,5 @@
+"""Functions for perturbation effect analysis."""
+
 from ._perturbation_effect import perturbation_effect
 from ._set_output import set_output
 from ._in_silico_block_simulation import in_silico_block_simulation

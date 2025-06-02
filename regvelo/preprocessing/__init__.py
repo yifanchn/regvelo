@@ -1,3 +1,5 @@
+"""Functions for preprocessing data."""
+
 from ._preprocess_data import preprocess_data
 from ._sanity_check import sanity_check
 from ._set_prior_grn import set_prior_grn

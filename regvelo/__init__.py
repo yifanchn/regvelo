@@ -56,8 +56,8 @@ __all__ = [
     "REGISTRY_KEYS",
     "datasets",
     "ModelComparison",
-    "mt",
-    "tl",
-    "pl",
-    "pp"
+    "metrics", "mt",
+    "tools", "tl",
+    "plotting", "pl",
+    "preprocessing", "pp"
 ]
