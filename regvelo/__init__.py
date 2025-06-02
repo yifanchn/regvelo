@@ -12,6 +12,8 @@ from regvelo import preprocessing as pp
 
 from ._constants import REGISTRY_KEYS
 from ._model import REGVELOVI, VELOVAE
+from .tools._in_silico_block_simulation import in_silico_block_simulation
+from .tools._TFscreening import TFscreening
 from .ModelComparison import ModelComparison
 
 import sys  # isort:skip
@@ -49,5 +51,7 @@ __all__ = [
     "VELOVAE",
     "REGISTRY_KEYS",
     "datasets",
+    "in_silico_block_simulation",
+    "TFscreening",
     "ModelComparison"
 ]
