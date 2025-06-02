@@ -17,7 +17,7 @@ from .ModelComparison import ModelComparison
 
 import sys  # isort:skip
 
-sys.modules.update({f"{__name__}.{m}": globals()[m] for m in ["tl", "pl", "pp"]})
+sys.modules.update({f"{__name__}.{m}": globals()[m] for m in ["mt", "tl", "pl", "pp"]})
 
 # https://github.com/python-poetry/poetry/pull/2366#issuecomment-652418094
 # https://github.com/python-poetry/poetry/issues/144#issuecomment-623927302
@@ -50,9 +50,5 @@ __all__ = [
     "VELOVAE",
     "REGISTRY_KEYS",
     "datasets",
-    "mt",
-    "tl",
-    "pl",
-    "pp",
     "ModelComparison"
 ]
