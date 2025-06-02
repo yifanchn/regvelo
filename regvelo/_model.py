@@ -108,8 +108,8 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
     def __init__(
         self,
         adata: AnnData,
-        W: torch.Tensor = None,
-        regulators: list = None,
+        W: torch.Tensor | None = None,
+        regulators: list | None = None,
         lam: float = 1,
         lam2: float = 0,
         vector_constraint: bool = True,
