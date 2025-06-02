@@ -7,22 +7,21 @@ from typing import Any
 from .utils import calculate_entropy
 
 
-def commitment_score(adata : AnnData, 
-                     lineage_key : str = "lineages_fwd",
-                     **kwargs : Any
-                     ) -> None:
-    """
-    Compute and plot cell fate commitment scores based on fate probabilities. 
+def commitment_score(
+        adata : AnnData, 
+        lineage_key : str = "lineages_fwd",
+        **kwargs : Any
+        ) -> None:
+    """Compute and plot cell fate commitment scores based on fate probabilities. 
     
     Parameters
     ----------
-    adata : AnnData
-        Dataset containing fate probabilities. Original dataset or perturbed dataset.
-    lineage_key : str
-        The key in .obsm that stores the fate probabilities.
-    kwargs : Any
-        Optional   
-        Additional keyword arguments passed to scanpy.pl.umap function.
+    adata
+        Annotated data matrix containing cell fate probabilities in `adata.obsm`.
+    lineage_key
+        Key in `adata.obsm` that stores the cell fate probabilities.
+    **kwargs
+        Additional keyword arguments passed to `scanpy.pl.umap`.
     """
 
     if lineage_key not in adata.obsm:
