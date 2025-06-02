@@ -1,34 +1,42 @@
-
 import torch
+
 import pandas as pd
 from anndata import AnnData
-from typing import Union, Sequence, Any, Optional
-import cellrank as cr
+from typing import Any
 
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-from ..tools.abundance_test import abundance_test
-
-def depletion_score(adata : AnnData,
-                    df : pd.DataFrame,
-                    color_label : str = "celltype_cluster",
-                    **kwargs : Any,
-                    ) -> None:
-    """
-    Plot depletion scores.
+def depletion_score(
+        adata : AnnData,
+        df : pd.DataFrame,
+        color_label : str = "celltype_cluster",
+        **kwargs : Any,
+        ) -> None:
+    """Plot depletion scores for transcription factors across terminal states.
 
     Parameters
     ----------
-    adata : AnnData
-        Annotated data matrix of original model.
-    df : pandas.DataFrame
-    color_label : str
-        Used for color palette
-    kwargs : Any
-        Optional   
-        Additional keyword arguments passed to CellRank and plot functions.
+    adata
+        Annotated data matrix of the unperturbed system.
+    df
+        DataFrame containing columns "TF", "Depletion score", and "Terminal state".
+    color_label
+        Key in `adata.obs` used to extract categorical color palette from `adata.uns`.
+    **kwargs
+        Additional keyword arguments, including:
+        - fontsize : int, default 14
+        - figsize : tuple, default (12, 6)
+        - xlabel : str, default "TF"
+        - ylabel : str, default "Depletion score"
+        - legend_loc : str, default "center left"
+        - legend_bbox : tuple, default (1.02, 0.5)
+
+    Returns
+    -------
+    None
+        Displays a searborn barplot.
     """
 
     fontsize = kwargs.get("fontsize", 14)
