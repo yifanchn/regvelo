@@ -4,7 +4,7 @@ import scanpy as sc
 from anndata import AnnData
 from typing import Any
 
-from .utils import calculate_entropy
+from ..metrics._utils import calculate_entropy
 
 
 def commitment_score(
@@ -22,6 +22,11 @@ def commitment_score(
         Key in `adata.obsm` that stores the cell fate probabilities.
     **kwargs
         Additional keyword arguments passed to `scanpy.pl.umap`.
+    
+    Returns
+    -------
+    None
+        Modifies `adata.obs["commitment_score"]` and plots a UMAP.
     """
 
     if lineage_key not in adata.obsm:
