@@ -3,7 +3,7 @@ from anndata import AnnData
 from typing import Union, Sequence, Any, Tuple, Dict
 import cellrank as cr
 
-from .abundance_test import abundance_test
+from ._abundance_test import abundance_test
 
 def depletion_score(
         perturbed : Dict[str, AnnData],
