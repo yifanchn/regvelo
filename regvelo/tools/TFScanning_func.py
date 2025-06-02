@@ -9,7 +9,7 @@ import os, shutil
 from typing import Dict, Optional, Sequence, Tuple, Union
 
 from .._model import REGVELOVI
-from .utils import split_elements, combine_elements
+from ._utils import split_elements, combine_elements
 from ..metrics._abundance_test import abundance_test
 
 

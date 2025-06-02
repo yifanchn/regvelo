@@ -9,7 +9,7 @@ import os, shutil
 from typing import Dict, Optional, Sequence, Tuple, Union
 
 from .._model import REGVELOVI
-from .utils import split_elements, get_list_name
+from ._utils import split_elements, get_list_name
 from .TFScanning_func import TFScanning_func
 
 
