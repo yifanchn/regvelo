@@ -15,7 +15,7 @@ from ._model import REGVELOVI
 import scvelo as scv
 
 
-from .tools.set_output import set_output
+from .tools._set_output import set_output
 from .metrics._tsi import get_tsi_score
 
 
