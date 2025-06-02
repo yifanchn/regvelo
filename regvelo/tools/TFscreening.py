@@ -10,7 +10,7 @@ from typing import Dict, Optional, Sequence, Tuple, Union
 
 from .._model import REGVELOVI
 from ._utils import split_elements, get_list_name
-from .TFScanning_func import TFScanning_func
+from ._TFScanning_func import TFScanning_func
 
 
 def TFscreening(

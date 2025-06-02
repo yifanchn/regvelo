@@ -14,43 +14,44 @@ from ..metrics._abundance_test import abundance_test
 
 
 def TFScanning_func(
-    model : str, 
-    adata : AnnData, 
-    cluster_label : Optional[str] = None,
-    terminal_states : Optional[Union[str, Sequence[str], Dict[str, Sequence[str]], pd.Series]] = None,
-    KO_list : Optional[Union[str, Sequence[str], Dict[str, Sequence[str]], pd.Series]] = None,
-    n_states : Optional[Union[int, Sequence[int]]] = None,
-    cutoff : Optional[Union[int, Sequence[int]]] = 1e-3,
-    method : Optional[str] = "likelihood",
-    combined_kernel : Optional[bool] = False,
+    model: str, 
+    adata: AnnData, 
+    cluster_label: Union[str, None] = None,
+    terminal_states: Union[str, Sequence[str], Dict[str, Sequence[str]], pd.Series] = None,
+    KO_list: Union[str, Sequence[str], Dict[str, Sequence[str]], pd.Series] = None,
+    n_states: Union[int, Sequence[int]] = None,
+    cutoff: Union[float, Sequence[float]] = 1e-3,
+    method: str = "likelihood",
+    combined_kernel: bool = False,
     ) -> Dict[str, Union[float, pd.DataFrame]]:
 
-    """ 
-    Perform in silico TF regulon knock-out screening
+    """Perform in silico TF regulon knock-out screening
 
     Parameters
     ----------
     model
-        The saved address for the RegVelo model.
+        Path to the saved RegVelo model.
     adata
-        Anndata objects.
+        Annotated data matrix.
     cluster_label
-        Key in :attr:`~anndata.AnnData.obs` to associate names and colors with :attr:`terminal_states`.
+        Key in `adata.obs` to associate names and colors with :attr:`terminal_states`.
     terminal_states
-        subset of :attr:`macrostates`.
+        Subset of :attr:`macrostates`.
     KO_list
-        List of TF combinations to simulate knock-out (KO) effects
-        Can be single TF e.g. geneA
-        or double TFs e.g. geneB_geneC
-        example input: ["geneA","geneB_geneC"]
+        List of TF names or combinations (e.g., ["geneA", "geneB_geneC"]).
     n_states
         Number of macrostates to compute.
     cutoff
-        The threshold for determing which links need to be muted,
+        Threshold for determing which links need to be muted,
     method
-        Quantify perturbation effects via `likelihood` or `t-statistics`
+        Method {"likelihood", "t-statistics"} for quantifying perturbation effect.
     combined_kernel
-        Use combined kernel (0.8*VelocityKernel + 0.2*ConnectivityKernel)
+        Whether to use a combined kernel (0.8*VelocityKernel + 0.2*ConnectivityKernel)
+
+    Returns
+    -------
+    d
+        Dictionary with keys 'TF', 'coefficient', and 'pvalue' summarizing KO effects.
     """
 
     reg_vae = REGVELOVI.load(model, adata)
