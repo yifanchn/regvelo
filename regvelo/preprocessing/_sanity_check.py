@@ -6,24 +6,22 @@ from urllib.request import urlretrieve
 import torch
 import numpy as np
 import pandas as pd
-import scvelo as scv
 from anndata import AnnData
-from sklearn.preprocessing import MinMaxScaler
-from scipy.spatial.distance import cdist
 
-def sanity_check(
-       adata : AnnData,
-    ) -> AnnData:
+
+def sanity_check(adata : AnnData) -> AnnData:
     
-    """
-    Sanity check
-
-    This function helps to ensure each gene will have at least one regulator.
+    """Ensure that all genes in the AnnData object have a least one regulator.
 
     Parameters
     ----------
     adata
         Annotated data matrix.
+
+    Returns
+    -------
+    AnnData
+        Updated AnnData object with refined regulatory network and gene names.
     """
     
     gene_name = adata.var.index.tolist()
