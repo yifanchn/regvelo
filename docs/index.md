@@ -4,7 +4,9 @@
 
 RegVelo - Regulatory Velocity
 =================================================
+```{eval-rst}
 .. module:: regvelo
+```
 
 Getting started
 ----------------
@@ -14,6 +16,7 @@ Citing regvelo
 
 Important resources
 -------------------
+```{eval-rst}
 .. grid:: 3
     :gutter: 1
 
@@ -35,17 +38,18 @@ Important resources
         :link-type: doc
 
         Check out how to use :mod:`regvelo` for data analysis.
+```
 
 
-.. toctree::
-    :maxdepth: 2
-    :hidden:
+```{toctree}
+:maxdepth: 2
+:hidden:
 
-    about/index
-    api/index
-    user/index
-    release_notes/index
-    references
-
+about/index
+api/index
+user/index
+release_notes/index
+references
 
 ```
+
