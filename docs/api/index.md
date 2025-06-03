@@ -6,7 +6,7 @@
 
 ```{eval-rst}
 .. autosummary::
-   :toctree: reference/
+   :toctree: model/
    :nosignatures:
 
    REGVELOVI
@@ -14,7 +14,7 @@
 
 ```{eval-rst}
 .. autosummary::
-   :toctree: reference/
+   :toctree: model/
    :template: class_no_inherited.rst
    :nosignatures:
 
