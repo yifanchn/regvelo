@@ -59,6 +59,11 @@ extensions = [
 ]
 
 autosummary_generate = True
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True,
+    'show-inheritance': True,
+}
 autodoc_member_order = "bysource"
 default_role = "literal"
 autodoc_typehints = "description"
