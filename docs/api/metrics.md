@@ -3,7 +3,6 @@
 ```{eval-rst}
 .. module:: regvelo.metrics
 .. currentmodule:: regvelo
-```
 
 .. autosummary::
    :toctree: genapi
