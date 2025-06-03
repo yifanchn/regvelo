@@ -71,7 +71,7 @@ docs = [
   "sphinxcontrib-bibtex",
   "ipykernel",
   "ipython",
-  "sphinx_design>=0.3.0",
+  "sphinx_design>=0.3.0"
 ]
 tutorials = ["scanpy"]
 
