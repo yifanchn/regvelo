@@ -67,6 +67,7 @@ extensions = [
     "sphinx.ext.extlinks",
     *[p.stem for p in (HERE / "extensions").glob("*.py")],
     "sphinx_copybutton",
+    "sphinx_design",
 ]
 
 autosummary_generate = True

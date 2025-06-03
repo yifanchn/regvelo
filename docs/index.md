@@ -47,7 +47,7 @@ Important resources
 
 about/index
 api/index
-user/index
+tutorials/index
 release_notes/index
 references
 
