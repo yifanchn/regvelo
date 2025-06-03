@@ -11,14 +11,14 @@ import regvelo as rgv
 ```
 
 ```{toctree}
-   :maxdepth: 2
+:maxdepth: 2
 
-   datasets
-   preprocessing
-   model
-   tools
-   metrics
-   plotting
+datasets
+preprocessing
+model
+tools
+metrics
+plotting
 ```
 
 
