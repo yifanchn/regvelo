@@ -4,6 +4,12 @@
 .. currentmodule:: regvelo
 ```
 
+Import `regvelo` as:
+
+```python
+import regvelo as rgv
+```
+
 ```{eval-rst}
 .. autosummary::
    :toctree: model/
