@@ -4,6 +4,7 @@
 
 RegVelo - Regulatory Velocity
 =================================================
+.. module:: regvelo
 
 Getting started
 ----------------
