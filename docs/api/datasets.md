@@ -5,11 +5,10 @@
 .. currentmodule:: regvelo
 ```
 
-```{autosummary}
-    :toctree: genapi
+.. autosummary::
+   :toctree: genapi
 
-    datasets.zebrafish_nc
-    datasets.zebrafish_grn
-    datasets.murine_nc
-
+   datasets.zebrafish_nc
+   datasets.zebrafish_grn
+   datasets.murine_nc
 ```
