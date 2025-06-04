@@ -1,7 +1,7 @@
 # Datasets
 
 ```{eval-rst}
-.. currentmodule:: regvelo.datasets
+.. currentmodule:: regvelo
 ```
 
 ```{eval-rst}
