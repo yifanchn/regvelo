@@ -40,8 +40,9 @@
 
 
 ```{toctree}
-:maxdepth: 2
-:hidden:
+:hidden: true
+:maxdepth: 3
+:titlesonly: true
 
 about/index
 api/index
