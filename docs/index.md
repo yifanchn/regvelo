@@ -2,20 +2,18 @@
 
 ```
 
-RegVelo - Regulatory Velocity
-=================================================
+# RegVelo - Regulatory Velocity
+
 ```{eval-rst}
 .. module:: regvelo
 ```
 
-Getting started
-----------------
+## Getting started
 
-Citing regvelo
--------------
+## Citing regvelo
 
-Important resources
--------------------
+## Important resources
+
 ```{eval-rst}
 .. grid:: 3
     :gutter: 1

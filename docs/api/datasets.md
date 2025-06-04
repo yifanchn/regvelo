@@ -1,11 +1,10 @@
 # Datasets
 
 ```{eval-rst}
-.. module:: regvelo.datasets
 .. currentmodule:: regvelo
 
 .. autosummary::
-    :toctree: genapi
+    :toctree: reference/
 
     datasets.zebrafish_nc
     datasets.zebrafish_grn
