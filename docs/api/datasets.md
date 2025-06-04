@@ -1,8 +1,10 @@
 # Datasets
 
 ```{eval-rst}
-.. currentmodule:: regvelo
+.. currentmodule:: regvelo.datasets
+```
 
+```{eval-rst}
 .. autosummary::
     :toctree: reference/
     :nosignatures:

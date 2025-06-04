@@ -1,5 +1,9 @@
 # API
 
+```{eval-rst}
+.. currentmodule:: regvelo
+```
+
 Import `regvelo` as:
 
 ```
