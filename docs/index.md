@@ -4,10 +4,6 @@
 
 # RegVelo - Regulatory Velocity
 
-```{eval-rst}
-.. module:: regvelo
-```
-
 ## Getting started
 
 ## Citing regvelo
