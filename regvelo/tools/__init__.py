@@ -1,4 +1,4 @@
-"""Functions for perturbation effect analysis."""
+"""regvelo"""
 
 from ._perturbation_effect import perturbation_effect
 from ._set_output import set_output

@@ -1,4 +1,4 @@
-"""Functions for preprocessing data."""
+"""regvelo"""
 
 from ._preprocess_data import preprocess_data
 from ._sanity_check import sanity_check

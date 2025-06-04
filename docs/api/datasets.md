@@ -5,6 +5,7 @@
 
 .. autosummary::
     :toctree: reference/
+    :nosignatures:
 
     datasets.zebrafish_nc
     datasets.zebrafish_grn

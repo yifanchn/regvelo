@@ -1,4 +1,4 @@
-"""regvelo."""
+"""regvelo"""
 
 import logging
 

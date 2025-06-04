@@ -2,7 +2,7 @@
 
 Import `regvelo` as:
 
-```python
+```
 import regvelo as rgv
 ```
 
