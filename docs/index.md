@@ -2,6 +2,8 @@
 
 ```
 
+## Important resources
+
 ```{eval-rst}
 .. grid:: 3
     :gutter: 1
