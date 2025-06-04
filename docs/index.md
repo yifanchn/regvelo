@@ -2,14 +2,6 @@
 
 ```
 
-# RegVelo - Regulatory Velocity
-
-## Getting started
-
-## Citing regvelo
-
-## Important resources
-
 ```{eval-rst}
 .. grid:: 3
     :gutter: 1
