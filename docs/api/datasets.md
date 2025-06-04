@@ -1,7 +1,7 @@
 # Datasets
 
 ```{eval-rst}
-.. currentmodule:: regvelo
+.. currentmodule:: regvelo.datasets
 ```
 
 ```{eval-rst}
@@ -9,7 +9,7 @@
     :toctree: reference/
     :nosignatures:
 
-    datasets.zebrafish_nc
-    datasets.zebrafish_grn
-    datasets.murine_nc
+    zebrafish_nc
+    zebrafish_grn
+    murine_nc
 ```
