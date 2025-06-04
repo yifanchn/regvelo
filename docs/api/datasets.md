@@ -5,9 +5,9 @@
 .. currentmodule:: regvelo
 
 .. autosummary::
-   :toctree: genapi
+    :toctree: genapi
 
-   datasets.zebrafish_nc
-   datasets.zebrafish_grn
-   datasets.murine_nc
+    datasets.zebrafish_nc
+    datasets.zebrafish_grn
+    datasets.murine_nc
 ```
