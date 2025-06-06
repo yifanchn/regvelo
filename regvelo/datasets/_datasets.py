@@ -1,11 +1,12 @@
 from pathlib import Path
-from typing import Union
+from typing import Union, Literal
 
+from anndata import AnnData
 import pandas as pd
 
 from scanpy import read
 
-
+# Remote data URLs
 url_adata = "https://drive.google.com/uc?id=1Nzq1F6dGw-nR9lhRLfZdHOG7dcYq7P0i&export=download"
 url_grn = "https://drive.google.com/uc?id=1ci_gCwdgGlZ0xSn6gSa_-LlIl9-aDa1c&export=download/"
 url_adata_murine_processed = "https://drive.usercontent.google.com/download?id=19bNQfW3jMKEEjpjNdUkVd7KDTjJfqxa5&export=download&authuser=1&confirm=t&uuid=4fdf3051-229b-4ce2-b644-cb390424570a&at=APcmpoxgcuZ5r6m6Fb6N_2Og6tEO:1745354679573"
@@ -13,7 +14,7 @@ url_adata_murine_normalized = "https://drive.usercontent.google.com/download?id=
 url_adata_murine_velocyto = "https://drive.usercontent.google.com/download?id=18Bhtb7ruoUxpNt8WMYSaJ1RyoiHOCEjd&export=download&authuser=1&confirm=t&uuid=ecc42202-bc82-4ab1-b2c3-bfc31c99f0df&at=APcmpozsh6tBzkv8NSIZW0VipDJa:1745997422108"
 
 
-def zebrafish_nc(file_path: Union[str, Path] = "data/zebrafish_nc/adata_zebrafish_preprocessed.h5ad"):
+def zebrafish_nc(file_path: str | Path = "data/zebrafish_nc/adata_zebrafish_preprocessed.h5ad") -> AnnData:
     """Load zebrafish neural crest (NC) single-cell RNA-seq dataset.
 
     This dataset contains Smart-seq3 data across seven time points during NC development.
@@ -36,7 +37,7 @@ def zebrafish_nc(file_path: Union[str, Path] = "data/zebrafish_nc/adata_zebrafis
     adata = read(file_path, backup_url=url_adata, sparse=True, cache=True)
     return adata
 
-def zebrafish_grn(file_path: Union[str, Path] = "data/zebrafish_nc/prior_GRN.csv"):
+def zebrafish_grn(file_path: str | Path = "data/zebrafish_nc/prior_GRN.csv") -> pd.DataFrame:
     """Load prior gene regulatory network (GRN) for zebrafish neural crest cells.
 
     Parameters:
@@ -53,7 +54,7 @@ def zebrafish_grn(file_path: Union[str, Path] = "data/zebrafish_nc/prior_GRN.csv
     grn.to_csv(file_path)
     return grn
 
-def murine_nc(data_type: str = "preprocessed"):
+def murine_nc(data_type: Literal["preprocessed", "normalized", "velocyto"] = "preprocessed") -> AnnData:
     """Load mouse neural crest single-cell RNA-seq dataset (subset of Qiu et al.).
 
     The dataset is available in three variants:
