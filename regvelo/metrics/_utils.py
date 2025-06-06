@@ -32,7 +32,7 @@ def calculate_entropy(prob_matrix : np.ndarray) -> np.ndarray:
 
     Returns
     -------
-    entropy
+    np.ndarray
         A 1D NumPy array of shape (n_cells,) containing the entropy values for each cell.
     """
     log_probs = np.zeros_like(prob_matrix)

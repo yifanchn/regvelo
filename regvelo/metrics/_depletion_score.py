@@ -6,11 +6,11 @@ import cellrank as cr
 from ._abundance_test import abundance_test
 
 def depletion_score(
-        perturbed : Dict[str, AnnData],
+        perturbed : dict[str, AnnData],
         baseline : AnnData,
-        terminal_state : Union[str, Sequence[str]],
+        terminal_state : str | Sequence[str],
         **kwargs : Any,
-        ) -> Tuple[pd.DataFrame, Dict[str, AnnData]]:
+        ) -> tuple[pd.DataFrame, dict[str, AnnData]]:
     """Compute depletion scores.
 
     Parameters
@@ -28,10 +28,9 @@ def depletion_score(
 
     Returns
     -------
-    df
-        DataFrame summarizing depletion scores and significance statistics.
-    perturbed
-        Updated dictionary mapping TFs to perturbed AnnData objects with cell fate probabilities.
+    tuple
+        - pd.DataFrame: DataFrame summarizing depletion scores and significance statistics.
+        - dict: Updated dictionary mapping TFs to perturbed AnnData objects with cell fate probabilities.
     """
     macro_kwargs = {k: kwargs[k] for k in ("n_states", "n_cells", "cluster_key", "method") if k in kwargs}
     compute_fate_probabilities_kwargs = {k: kwargs[k] for k in ("solver", "tol") if k in kwargs}

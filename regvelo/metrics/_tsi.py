@@ -2,7 +2,7 @@ from typing import Any, List, Set
 from anndata import AnnData 
 
 
-def generate_sequence(k: int, n: int) -> List[int]:
+def generate_sequence(k: int, n: int) -> list[int]:
     """Generate a sequence from 1 to k. If the length of the sequence is less than n, the remaining positions are filled with the value k.
 
     Parameters
@@ -14,7 +14,7 @@ def generate_sequence(k: int, n: int) -> List[int]:
 
     Returns
     -------
-    sequence
+    list
         A list of integers from 1 to k, padded with k to length n if necessary.
     """
     sequence = list(range(1, k + 1))
@@ -36,7 +36,7 @@ def plot_tsi(
     terminal_states: Set[str],
     cluster_key: str,
     max_states: int = 12,
-    ) -> List[int]:
+    ) -> list[int]:
     """Compute the number of unique terminal states for each macrostate count.
 
     Parameters
@@ -56,7 +56,7 @@ def plot_tsi(
 
     Returns
     -------
-    pre_value
+    list
         Number of recovered terminal states for each macrostate count.
     """
     # Create a mapping of state identifiers to their corresponding types
@@ -94,12 +94,12 @@ def plot_tsi(
 
 def get_tsi_score(
     adata: AnnData,
-    points: List[float],
+    points: list[float],
     cluster_key: str,
     terminal_states: Set[str],
     kernel: Any,
     max_states: int = 12,
-    ) -> List[float]:
+    ) -> list[float]:
     """Calculate the Terminal State Integration (TSI) score for a range of thresholds.
 
     Parameters
@@ -119,7 +119,7 @@ def get_tsi_score(
 
     Returns
     -------
-    tsi_score
+    list
         A list of TSI scores, one for each threshold in `points`. Each score represents
         the normalized area under the staircase function compared to the goal sequence.
     """

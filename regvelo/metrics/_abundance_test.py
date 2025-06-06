@@ -2,14 +2,14 @@ import numpy as np
 import pandas as pd
 from scipy.stats import ranksums, ttest_ind
 from sklearn.metrics import roc_auc_score
-
+from typing import Literal
 from ._utils import p_adjust_bh
 
 
 def abundance_test(
     prob_raw : pd.DataFrame, 
     prob_pert : pd.DataFrame, 
-    method : str = "likelihood"
+    method : Literal["likelihood", "t-statistics"] = "likelihood"
     ) -> pd.DataFrame:
     """Perform an abundance test comparing cell fate probabilities between 
     raw and perturbed datasets.
@@ -27,11 +27,9 @@ def abundance_test(
 
     Returns
     -------
-    table
-        DataFrame containing:
-        - `coefficient`: test statistic or ROC AUC score,
-        - `p-value`: unadjusted p-value,
-        - `FDR adjusted p-value`: Benjamini-Hochberg corrected p-value.
+    pd.DataFrame
+        DataFrame containing: `coefficient`: test statistic or ROC AUC score, `p-value`: unadjusted p-value, and
+        `FDR adjusted p-value`: Benjamini-Hochberg corrected p-value.
     """
     y = [1] * prob_raw.shape[0] + [0] * prob_pert.shape[0]
     X = pd.concat([prob_raw, prob_pert], axis=0)
