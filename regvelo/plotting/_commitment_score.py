@@ -8,9 +8,9 @@ from ..metrics._utils import calculate_entropy
 
 
 def commitment_score(
-        adata : AnnData, 
-        lineage_key : str = "lineages_fwd",
-        **kwargs : Any
+        adata: AnnData, 
+        lineage_key: str = "lineages_fwd",
+        **kwargs: Any
         ) -> None:
     """Compute and plot cell fate commitment scores based on fate probabilities. 
     

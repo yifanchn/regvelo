@@ -9,10 +9,10 @@ import matplotlib.pyplot as plt
 
 
 def depletion_score(
-        adata : AnnData,
-        df : pd.DataFrame,
-        color_label : str = "celltype_cluster",
-        **kwargs : Any,
+        adata: AnnData,
+        df: pd.DataFrame,
+        color_label: str = "celltype_cluster",
+        **kwargs: Any,
         ) -> None:
     """Plot depletion scores for transcription factors across terminal states.
 
