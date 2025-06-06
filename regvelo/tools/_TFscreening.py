@@ -65,10 +65,9 @@ def TFscreening(
 
     Returns
     -------
-    coef
-        DataFrame containing the coefficients of the perturbation effects.
-    pval
-        DataFrame containing the p-values of the perturbation effects.
+    tuple
+        - `coef` : DataFrame containing the coefficients of the perturbation effects.
+        - `pval` : DataFrame containing the p-values of the perturbation effects.
     """
 
     if soft_constraint is not True:

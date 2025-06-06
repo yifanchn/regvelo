@@ -7,7 +7,7 @@ from typing import Union, Sequence
 def perturbation_effect(
     adata_perturb: AnnData,
     adata: AnnData,
-    terminal_state: Union[str, Sequence[str]],
+    terminal_state: str | Sequence[str],
     ) -> AnnData:
     """Compute change in fate probabilities towards terminal states after perturbation. Negative values correspond to a decrease in
     probabilities, while positive values indicate an increase.
@@ -23,7 +23,7 @@ def perturbation_effect(
 
     Returns
     -------
-    adata
+    AnnData
         Annotated data matrix with the following added:
         - `terminal state perturbation` : Change in fate probabilities towards terminal state after perturbation.
     """

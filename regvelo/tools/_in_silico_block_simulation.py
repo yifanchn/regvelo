@@ -12,10 +12,10 @@ def in_silico_block_simulation(
         model: str,
         adata: AnnData,
         TF: str,
-        effects: int = 0,
+        effects: float = 0,
         cutoff: float = 1e-3,
         customized_GRN: torch.Tensor = None
-        ) -> tuple:
+        ) -> tuple[AnnData, REGVELOVI]:
     """Perform an in silico transcription factor (TF) regulon knock-out by modifying the gene regulatory network (GRN)
     in a trained RegVelo model.
 
@@ -36,10 +36,9 @@ def in_silico_block_simulation(
 
     Returns
     -------
-    adata_target_perturb
-        Annotated data matrix with the effects of the in silico perturbation added.
-    reg_vae_perturb
-        The RegVelo model with the perturbed GRN.
+    tuple
+        - Perturbed `AnnData` object with RegVelo outputs.
+        - RegVelo model with modified GRN.
     """
 
     reg_vae_perturb = REGVELOVI.load(model,adata)

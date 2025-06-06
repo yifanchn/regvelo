@@ -43,10 +43,9 @@ def markov_density_simulation(
 
     Returns
     -------
-    visits
-        pd.Series containing number of simulations that ended in each terminal cell.
-    visits_dens
-        pd.Series containing proportion of simulations that ended in each terminal cell.
+    tuple
+        - pd.Series containing number of simulations that ended in each terminal cell.
+        - pd.Series containing proportion of simulations that ended in each terminal cell.
     """
     np.random.seed(seed)
     

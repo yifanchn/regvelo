@@ -6,7 +6,7 @@ import cellrank as cr
 from anndata import AnnData
 from scvelo import logging as logg
 import os, shutil
-from typing import Dict, Optional, Sequence, Tuple, Union
+from typing import Dict, Optional, Sequence, Tuple, Union, Literal
 
 from .._model import REGVELOVI
 from ._utils import split_elements, combine_elements
@@ -16,15 +16,14 @@ from ..metrics._abundance_test import abundance_test
 def TFScanning_func(
     model: str, 
     adata: AnnData, 
-    cluster_label: Union[str, None] = None,
-    terminal_states: Union[str, Sequence[str], Dict[str, Sequence[str]], pd.Series] = None,
-    KO_list: Union[str, Sequence[str], Dict[str, Sequence[str]], pd.Series] = None,
-    n_states: Union[int, Sequence[int]] = None,
-    cutoff: Union[float, Sequence[float]] = 1e-3,
-    method: str = "likelihood",
+    cluster_label: str = None,
+    terminal_states: str | Sequence[str] | dict[str, Sequence[str]] | pd.Series = None,
+    KO_list: str | Sequence[str] | dict[str, Sequence[str]] | pd.Series = None,
+    n_states: int | Sequence[int] = None,
+    cutoff: float | Sequence[float] = 1e-3,
+    method: Literal["likelihood", "t-statistics"] = "likelihood",
     combined_kernel: bool = False,
-    ) -> Dict[str, Union[float, pd.DataFrame]]:
-
+    ) -> dict[str, float | pd.DataFrame]:
     """Perform in silico TF regulon knock-out screening
 
     Parameters
@@ -50,7 +49,7 @@ def TFScanning_func(
 
     Returns
     -------
-    d
+    dict
         Dictionary with keys 'TF', 'coefficient', and 'pvalue' summarizing KO effects.
     """
 

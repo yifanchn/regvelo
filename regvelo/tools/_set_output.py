@@ -12,7 +12,7 @@ def set_output(
     adata: AnnData, 
     vae: Any, 
     n_samples: int = 30, 
-    batch_size: int | None = None
+    batch_size: int = None
     ) -> None:
     """Add inference results to adata.
 
