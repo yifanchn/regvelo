@@ -1,38 +1,35 @@
-import torch
-
-import pandas as pd
 import numpy as np
-
+import pandas as pd
 from scipy.stats import ranksums, ttest_ind
 from sklearn.metrics import roc_auc_score
-
-import os, shutil
-
-from .._model import REGVELOVI
-from .utils import p_adjust_bh
+from typing import Literal
+from ._utils import p_adjust_bh
 
 
 def abundance_test(
     prob_raw : pd.DataFrame, 
     prob_pert : pd.DataFrame, 
-    method : str = "likelihood"
+    method : Literal["likelihood", "t-statistics"] = "likelihood"
     ) -> pd.DataFrame:
-    """
-    Perform an abundance test between two probability datasets.
+    """Perform an abundance test comparing cell fate probabilities between 
+    raw and perturbed datasets.
 
     Parameters
     ----------
-    prob_raw : pd.DataFrame
-        Raw probabilities dataset.
-    prob_pert : pd.DataFrame
-        Perturbed probabilities dataset.
-    method : str, optional (default="likelihood")
-        Method to calculate scores: "likelihood" or "t-statistics".
+    prob_raw
+        DataFrame containing fate probabilities from the original (unperturbed) data.
+    prob_pert
+        DataFrame containing fate probabilities from the perturbed data.
+    method
+        Scoring method to use:
+        - "t-statistics": Uses t-statistics.
+        - "likelihood": Uses ROC AUC.
 
     Returns
     -------
     pd.DataFrame
-        Dataframe with coefficients, p-values, and FDR adjusted p-values.
+        DataFrame containing: `coefficient`: test statistic or ROC AUC score, `p-value`: unadjusted p-value, and
+        `FDR adjusted p-value`: Benjamini-Hochberg corrected p-value.
     """
     y = [1] * prob_raw.shape[0] + [0] * prob_pert.shape[0]
     X = pd.concat([prob_raw, prob_pert], axis=0)

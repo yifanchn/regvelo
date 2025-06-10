@@ -9,35 +9,34 @@ import os, shutil
 from typing import Dict, Optional, Sequence, Tuple, Union
 
 from .._model import REGVELOVI
-from .utils import split_elements, get_list_name
-from .TFScanning_func import TFScanning_func
+from ._utils import split_elements, get_list_name
+from ._TFScanning_func import TFScanning_func
 
 
 def TFscreening(
-    adata : AnnData, 
-    prior_graph : torch.Tensor,
-    lam : Optional[int] = 1,
-    lam2 : Optional[int] = 0,
-    soft_constraint : Optional[bool] = True,
-    TF_list : Optional[Union[str, Sequence[str], Dict[str, Sequence[str]], pd.Series]] = None,
-    cluster_label : Optional[str] = None,
-    terminal_states : Optional[Union[str, Sequence[str], Dict[str, Sequence[str]], pd.Series]] = None,
-    KO_list : Optional[Union[str, Sequence[str], Dict[str, Sequence[str]], pd.Series]] = None,
-    n_states : Optional[Union[int, Sequence[int]]] = 8,
-    cutoff : Optional[float] = 1e-3,
-    max_nruns : Optional[float] = 5,
-    method : Optional[str] = "likelihood",
-    dir : Optional[str] = None
-    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """ 
-    Perform in silico TF regulon knock-out screening
+    adata: AnnData, 
+    prior_graph: torch.Tensor,
+    lam: int = 1,
+    lam2: int = 0,
+    soft_constraint: bool = True,
+    TF_list: str | list[str] | dict[str, list[str]] | pd.Series = None,
+    cluster_label : str | None = None,
+    terminal_states : str | list[str] | dict[str, list[str]] | pd.Series = None,
+    KO_list : str | list[str] | dict[str, list[str]] | pd.Series = None,
+    n_states : int | list[int] = 8,
+    cutoff : float = 1e-3,
+    max_nruns : float = 5,
+    method : str = "likelihood",
+    dir : str | None = None,
+    ) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Perform repeated in silico TF regulon knock-out screening.
 
     Parameters
     ----------
     adata
-        Anndata objects.
+        Annotated data matrix.
     prior_graph
-        A prior graph for RegVelo inference
+        A prior graph for RegVelo inference.
     lam
         Regularization parameter for controling the strengths of adding prior knowledge.
     lam2
@@ -47,24 +46,28 @@ def TFscreening(
     TF_list
         The TF list used for RegVelo inference.
     cluster_label
-        Key in :attr:`~anndata.AnnData.obs` to associate names and colors with :attr:`terminal_states`.
+        Key in `adata.obs` to associate names and colors with :attr:`terminal_states`.
     terminal_states
         subset of :attr:`macrostates`.
     KO_list
-        List of TF combinations to simulate knock-out (KO) effects
-        can be single TF e.g. geneA
-        or double TFs e.g. geneB_geneC
-        example input: ["geneA","geneB_geneC"]
+        List of TF names or combinations (e.g., ["geneA", "geneB_geneC"]).
     n_states
         Number of macrostates to compute.
     cutoff
-        The threshold for determing which links need to be muted (<cutoff).
+        Threshold to zero out TF-target links during knock-out.
     max_nruns
-        maximum number of runs, soft constrainted RegVelo model need to have repeat runs to get stable perturbation results.
-    dir
-        the location to save temporary datasets.
+        Maximum number of runs, soft constrainted RegVelo model need to have repeat runs to get stable perturbation results.
+        Set to 1 if `soft_constraint=False`.
     method
         Use either `likelihood` or `t-statistics` to quantify perturbation effects
+    dir
+        Directory to store intermediate model files and results.
+
+    Returns
+    -------
+    tuple
+        - `coef` : DataFrame containing the coefficients of the perturbation effects.
+        - `pval` : DataFrame containing the p-values of the perturbation effects.
     """
 
     if soft_constraint is not True:

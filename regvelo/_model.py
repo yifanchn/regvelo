@@ -33,14 +33,17 @@ def _softplus_inverse(x: np.ndarray) -> np.ndarray:
 
 ## TODO: modified the TrainingPlan and generate the new classes
 class ModifiedTrainingPlan(TrainingPlan):
-    """
-    A TrainingPlan class modified to pass additional attributes to the module during training.
+    """A TrainingPlan class modified to pass additional attributes to the module during training.
 
-    This class modifies the training_step method to set current_epoch and global_step on the module.
+    This class modifies the `training_step` method to set `current_epoch` and `global_step`
+    on the module being trained, allowing the module to access training progress information.
 
-    Attributes:
-    module (LightningModule): The module being trained.
-    plan_kwargs (dict): Additional keyword arguments for the TrainingPlan.
+    Parameters
+    ----------
+    module : torch.nn.Module
+        The module (model) to be trained.
+    **plan_kwargs
+        Additional keyword arguments passed to the base TrainingPlan.
     """
 
     def __init__(self, module, **plan_kwargs):
@@ -61,48 +64,27 @@ class ModifiedTrainingPlan(TrainingPlan):
         return scvi_loss.loss
 
 class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
-    """Regulatory Velocity Variational Inference.
+    """Class implementing Regulatory Velocity Variational Inference (REGVELOVI).
 
+    This model extends the VAE framework to incorporate gene regulatory network (GRN) priors
+    into RNA velocity modeling.
+    
     Parameters
     ----------
     adata
-        AnnData object that has been registered via :func:`~regvelo.REGVELOVI.setup_anndata`.
+        Annotated data object that has been registered via `setup_anndata()`.
     W
-        Prior gene regulatory graph (torch.Tensor), with row indicating targets, column indicating regulators.
+        (tensor of shape [n_targets, n_regulators]), where rows indicate targets and columns indicate regulators.
     regulators
-        Transcription factor list.
-    lam
-        Regularization parameter for controling the strengths of adding prior knowledge.
-    lam2
-        Regularization parameter for controling the strengths of L1 regularization to the Jacobian matrix.
-    vector_constraint
-        Regularization on velocity.
-    bias_constraint
-        Regularization on bias term (base transcription rate).
-    simple_dynamics
-        Use simple version of RegVelo.
-    activate
-        Activation function used for modeling transcription rate.
-    base_alpha
-        Adding base transcription rate
-    n_hidden
-        Number of nodes per hidden layer.
-    n_latent
-        Dimensionality of the latent space.
-    n_layers
-        Number of hidden layers used for encoder and decoder NNs.
-    dropout_rate
-        Dropout rate for neural networks.
-    gamma_init_data
-        Initialize gamma using the data-driven technique.
-    linear_decoder
-        Use a linear decoder from latent space to time.
+        List of transcription factors.
     soft_constraint
-        Use soft constraint mode or hard constraint mode.
-    auto_regulation
-        Estimate self-regulation links in the GRN.
+        Whether to use a soft constraint mode (as opposed to a hard constraint).
+    lam
+        Regularization parameter controlling the strength of GRN prior incorporation.
+    lam2
+        Regularization parameter controlling the strength of L1 regularization on the Jacobian matrix.
     **model_kwargs
-        Keyword args for :class:`~regvelo.VELOVAE`
+        Additional keyword arguments passed to the :class:`~regvelo.VELOVAE` module.
     """
 
     def __init__(
@@ -110,26 +92,14 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         adata: AnnData,
         W: torch.Tensor = None,
         regulators: list = None,
+        soft_constraint: bool = True,
         lam: float = 1,
         lam2: float = 0,
-        vector_constraint: bool = True,
-        bias_constraint: bool = True,
-        simple_dynamics: bool = False,
-        x0: np.ndarray = None,
-        t0: np.ndarray = None,
-        activate: Literal["sigmoid", "softplus"] = "softplus",
-        base_alpha: bool = True,
-        n_hidden: int = 256,
-        n_latent: int = 10,
-        n_layers: int = 1,
-        dropout_rate: float = 0.1,
-        gamma_init_data: bool = False,
-        linear_decoder: bool = False,
-        soft_constraint: bool = True,
-        auto_regulation: bool = False,
         **model_kwargs,
-    ):
+        ):
         super().__init__(adata)
+
+        n_latent = model_kwargs.get("n_latent", 10)
         self.n_latent = n_latent
         
         ## TODO:determine the batch size
@@ -156,6 +126,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         
         alpha_1_unconstr = np.zeros(us_upper.shape).ravel()
         
+        gamma_init_data = model_kwargs.get("gamma_init_data", False)
         if gamma_init_data:
             gamma_unconstr = np.clip(_softplus_inverse(us_upper / ms_upper), None, 10)
         else:
@@ -183,6 +154,9 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         else:
             regulator_list = None
             
+        simple_dynamics = model_kwargs.get("simple_dynamics", False)
+        vector_constraint = model_kwargs.get("vector_constraint", True)
+        bias_constraint = model_kwargs.get("bias_constraint", True)
         if simple_dynamics:
             vector_constraint = False
             bias_constraint = False
@@ -193,24 +167,15 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
             target_index = target_index,
             skeleton = W,
             regulator_list = regulator_list,
-            activate = activate,
-            base_alpha = base_alpha,
-            n_hidden = n_hidden,
             n_latent = n_latent,
-            n_layers = n_layers,
             lam = lam,
             lam2 = lam2,
             vector_constraint = vector_constraint,
             bias_constraint = bias_constraint,
-            dropout_rate = dropout_rate,
             gamma_unconstr_init = gamma_unconstr,
             alpha_unconstr_init = alpha_unconstr,
             alpha_1_unconstr_init = alpha_1_unconstr,
-            x0 = x0,
-            t0 = t0,
-            linear_decoder = linear_decoder,
             soft_constraint = soft_constraint,
-            auto_regulation = auto_regulation,
             **model_kwargs,
         )
         self._model_summary_string = (
@@ -226,50 +191,54 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
 
     def train(
         self,
-        max_epochs: Optional[int] = 1500,
+        max_epochs: int = 1500,
         lr: float = 1e-2,
         weight_decay: float = 1e-5,
         eps: float = 1e-16,
         train_size: float = 0.9,
-        batch_size: Optional[int] = None,
-        validation_size: Optional[float] = None,
+        batch_size: int = None,
+        validation_size: float = None,
         early_stopping: bool = True,
         gradient_clip_val: float = 10,
-        plan_kwargs: Optional[dict] = None,
+        plan_kwargs: dict = None,
         optimizer: str = "AdamW",
         **trainer_kwargs,
-    ):
-        """Train the model.
-        The code is adapted from veloVI repository (https://github.com/YosefLab/velovi/)
+        ):
+        """Train the REGVELOVI model.
+        This method uses a modified SCVI TrainingPlan and TrainRunner to optimize model parameters
+        using the registered AnnData object. It supports early stopping, gradient clipping, and 
+        custom optimizer settings.
+
+        Adapted from the training routine of the veloVI repository:
+        https://github.com/YosefLab/velovi/.
 
         Parameters
         ----------
         max_epochs
-            Number of passes through the dataset. Defaults to 1500
+            Maximum number of training epochs.
         lr
-            Learning rate for optimization
+            Learning rate for the optimizer.
         weight_decay
-            Weight decay for optimization
-        use_gpu
-            Use default GPU if available (if None or True), or index of GPU to use (if int),
-            or name of GPU (if str, e.g., `'cuda:0'`), or use CPU (if False).
+            Weight decay coefficient for regularization.
+        eps
+            Epsilon value for numerical stability in the optimizer.
         train_size
-            Size of training set in the range [0.0, 1.0].
-        validation_size
-            Size of the test set. If `None`, defaults to 1 - `train_size`. If
-            `train_size + validation_size < 1`, the remaining cells belong to a test set.
+            Fraction of cells to use for training. Must be between 0 and 1.
         batch_size
-            Minibatch size to use during training.
+            Mini-batch size used during training. If None, defaults to the full dataset.
+        validation_size
+            Fraction of cells to use for validation. If None, defaults to 1 - train_size. 
+            If `train_size + validation_size < 1.0`, the remainder is used as a test set.
         early_stopping
-            Perform early stopping. Additional arguments can be passed in `**kwargs`.
-            See :class:`~scvi.train.Trainer` for further options.
+            Whether to perform early stopping based on validation loss.
         gradient_clip_val
-            Val for gradient clipping
+            Maximum allowed gradient value to clip gradients during backpropagation.
         plan_kwargs
-            Keyword args for :class:`~scvi.train.TrainingPlan`. Keyword arguments passed to
-            `train()` will overwrite values present in `plan_kwargs`, when appropriate.
+            Additional keyword arguments passed to the ModifiedTrainingPlan.
+        optimizer
+            Optimizer to use for training.
         **trainer_kwargs
-            Other keyword args for :class:`~scvi.train.Trainer`.
+            Additional keyword arguments passed to the SCVI TrainRunner.
         """
         self.module.max_epochs = max_epochs
         if batch_size is None:
@@ -309,46 +278,51 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
     @torch.inference_mode()
     def get_latent_time(
         self,
-        adata: Optional[AnnData] = None,
-        indices: Optional[Sequence[int]] = None,
-        gene_list: Optional[Sequence[str]] = None,
+        adata: AnnData = None,
+        indices: Sequence[int] = None,
+        gene_list: Sequence[str] = None,
         n_samples: int = 1,
-        n_samples_overall: Optional[int] = None,
-        batch_size: Optional[int] = None,
+        n_samples_overall: int = None,
+        batch_size: int = None,
         return_mean: bool = True,
-        return_numpy: Optional[bool] = None,
-    ) -> Union[np.ndarray, pd.DataFrame]:
-        """Returns the cells by genes latent time. 
-        The code is adapted from veloVI repository (https://github.com/YosefLab/velovi/)
+        return_numpy: bool = None,
+        ) -> np.ndarray | pd.DataFrame:
+        """Returns the inferred latent time for each cell and gene.
+
+        This function samples from the posterior distribution of the model to estimate 
+        latent transcriptional time for each gene in each cell. It supports subsampling, 
+        batching, and output customization.
+
+        Adapted from the veloVI repository:
+        https://github.com/YosefLab/velovi/
 
         Parameters
         ----------
         adata
-            AnnData object with equivalent structure to initial AnnData. If `None`, defaults to the
-            AnnData object used to initialize the model.
+            Annotated data object with the same structure as the one used during model setup.
+            If None, uses the registered AnnData.
         indices
-            Indices of cells in adata to use. If `None`, all cells are used.
+            List of cell indices to include. If None, all cells are used.
         gene_list
-            Return frequencies of expression for a subset of genes.
-            This can save memory when working with large datasets and few genes are
-            of interest.
+            List of genes to include in the output. If None, all genes are used.
         n_samples
-            Number of posterior samples to use for estimation.
+            Number of posterior samples to draw per cell.
         n_samples_overall
-            Number of overall samples to return. Setting this forces n_samples=1.
+            Total number of cells to subsample. If set, `n_samples` is forced to 1.
         batch_size
-            Minibatch size for data loading into model. Defaults to `scvi.settings.batch_size`.
+            Mini-batch size for processing data. If None, uses default batch size in SCVI.
         return_mean
-            Whether to return the mean of the samples.
+            If True, returns the mean over samples. If False, returns the full sample tensor.
         return_numpy
-            Return a :class:`~numpy.ndarray` instead of a :class:`~pandas.DataFrame`. DataFrame includes
-            gene names as columns. If either `n_samples=1` or `return_mean=True`, defaults to `False`.
-            Otherwise, it defaults to `True`.
+            If True, returns a NumPy array. If False or None, returns a DataFrame with
+            gene names as columns and cell names as rows.
 
         Returns
         -------
-        If `n_samples` > 1 and `return_mean` is False, then the shape is `(samples, cells, genes)`.
-        Otherwise, shape is `(cells, genes)`. In this case, return type is :class:`~pandas.DataFrame` unless `return_numpy` is True.
+        np.ndarray or pd.DataFrame
+            If `n_samples > 1` and `return_mean` is False, returns an array of shape 
+            (samples, cells, genes). Otherwise, returns (cells, genes), as either a 
+            NumPy array or DataFrame depending on `return_numpy`.
         """
         adata = self._validate_anndata(adata)
         if indices is None:
@@ -416,48 +390,54 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
     @torch.inference_mode()
     def get_velocity(
         self,
-        adata: Optional[AnnData] = None,
-        indices: Optional[Sequence[int]] = None,
-        gene_list: Optional[Sequence[str]] = None,
+        adata: AnnData = None,
+        indices: Sequence[int] = None,
+        gene_list: Sequence[str] = None,
         n_samples: int = 1,
-        n_samples_overall: Optional[int] = None,
-        batch_size: Optional[int] = None,
+        n_samples_overall: int = None,
+        batch_size: int = None,
         return_mean: bool = True,
-        return_numpy: Optional[bool] = None,
+        return_numpy: bool = None,
         clip: bool = True,
-    ) -> Union[np.ndarray, pd.DataFrame]:
-        """Returns cells by genes velocity estimates.
+        ) -> np.ndarray | pd.DataFrame:
+        """Returns velocity estimates for each gene in each cell.
+
+        This function samples from the posterior and computes the expected RNA velocity
+        as a function of unspliced and spliced abundances. Supports subsampling, batching,
+        and output control.
+
+        Adapted from the veloVI repository:
+        https://github.com/YosefLab/velovi/
 
         Parameters
         ----------
         adata
-            AnnData object with equivalent structure to initial AnnData. If `None`, defaults to the
-            AnnData object used to initialize the model.
+            Annotated data object with the same structure as the one used during model setup.
+            If None, uses the registered AnnData.
         indices
-            Indices of cells in adata to use. If `None`, all cells are used.
+            List of cell indices to include. If None, all cells are used.
         gene_list
-            Return velocities for a subset of genes.
-            This can save memory when working with large datasets and few genes are
-            of interest.
+            List of genes to include in the output. If None, all genes are used.
         n_samples
-            Number of posterior samples to use for estimation for each cell.
+            Number of posterior samples to draw per cell.
         n_samples_overall
-            Number of overall samples to return. Setting this forces n_samples=1.
+            Total number of cells to subsample. If set, `n_samples` is forced to 1.
         batch_size
-            Minibatch size for data loading into model. Defaults to `scvi.settings.batch_size`.
+            Mini-batch size for processing data. If None, uses default batch size in SCVI.
         return_mean
-            Whether to return the mean of the samples.
+            If True, returns the mean over samples. If False, returns the full sample tensor.
         return_numpy
-            Return a :class:`~numpy.ndarray` instead of a :class:`~pandas.DataFrame`. DataFrame includes
-            gene names as columns. If either `n_samples=1` or `return_mean=True`, defaults to `False`.
-            Otherwise, it defaults to `True`.
+            If True, returns a NumPy array. If False or None, returns a DataFrame with
+            gene names as columns and cell names as rows.
         clip
-            Clip to minus spliced value
+            Whether to clip velocities to avoid negative spliced abundances.
 
         Returns
         -------
-        If `n_samples` > 1 and `return_mean` is False, then the shape is `(samples, cells, genes)`.
-        Otherwise, shape is `(cells, genes)`. In this case, return type is :class:`~pandas.DataFrame` unless `return_numpy` is True.
+        np.ndarray or pd.DataFrame
+            If `n_samples > 1` and `return_mean` is False, returns an array of shape 
+            (samples, cells, genes). Otherwise, returns (cells, genes), as either a 
+            NumPy array or DataFrame depending on `return_numpy`.
         """
         adata = self._validate_anndata(adata)
         if indices is None:
@@ -537,42 +517,44 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
     @torch.inference_mode()
     def rgv_expression_fit(
         self,
-        adata: Optional[AnnData] = None,
-        indices: Optional[Sequence[int]] = None,
-        gene_list: Optional[Sequence[str]] = None,
+        adata: AnnData = None,
+        indices: Sequence[int] = None,
+        gene_list: Sequence[str] = None,
         n_samples: int = 1,
-        batch_size: Optional[int] = None,
+        batch_size: int = None,
         return_mean: bool = True,
-        return_numpy: Optional[bool] = None,
-    ) -> Union[np.ndarray, pd.DataFrame]:
-        r"""Returns the fitted spliced and unspliced abundance (s(t) and u(t)).
+        return_numpy: bool = None,
+        ) -> tuple[np.ndarray, np.ndarray] | tuple[pd.DataFrame, pd.DataFrame]:
+        """Returns the model-fitted unspliced and spliced expression (u(t), s(t)).
+
+        This function estimates the predicted unspliced and spliced abundances for each gene
+        in each cell by sampling from the posterior.
 
         Parameters
         ----------
         adata
-            AnnData object with equivalent structure to initial AnnData. If `None`, defaults to the
-            AnnData object used to initialize the model.
+            Annotated data object with the same structure as the one used during model setup.
+            If None, uses the registered AnnData.
         indices
-            Indices of cells in adata to use. If `None`, all cells are used.
+            List of cell indices to include. If None, all cells are used.
         gene_list
-            Return frequencies of expression for a subset of genes.
-            This can save memory when working with large datasets and few genes are
-            of interest.
+            List of genes to include in the output. If None, all genes are used.
         n_samples
-            Number of posterior samples to use for estimation.
+            Number of posterior samples to draw per cell.
         batch_size
-            Minibatch size for data loading into model. Defaults to `scvi.settings.batch_size`.
+            Mini-batch size for processing data. If None, uses default batch size in SCVI.
         return_mean
-            Whether to return the mean of the samples.
+            If True, returns the mean over samples. If False, returns the full sample tensor.
         return_numpy
-            Return a :class:`~numpy.ndarray` instead of a :class:`~pandas.DataFrame`. DataFrame includes
-            gene names as columns. If either `n_samples=1` or `return_mean=True`, defaults to `False`.
-            Otherwise, it defaults to `True`.
+            If True, returns NumPy arrays. If False or None, returns DataFrames with gene names as columns
+            and cell names as rows.
 
         Returns
         -------
-        If `n_samples` > 1 and `return_mean` is False, then the shape is `(samples, cells, genes)`.
-        Otherwise, shape is `(cells, genes)`. In this case, return type is :class:`~pandas.DataFrame` unless `return_numpy` is True.
+        tuple of np.ndarray or pd.DataFrame
+            A tuple containing model-fitted spliced and unspliced abundances.
+            If `n_samples > 1` and `return_mean` is False, arrays are of shape (samples, cells, genes).
+            Otherwise, shape is (cells, genes). Return type depends on `return_numpy`.
         """
         adata = self._validate_anndata(adata)
 
@@ -654,7 +636,29 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         else:
             return fits_s, fits_u
 
-    def compute_shared_time(self, t, perc=None, norm=True):
+    def compute_shared_time(
+            self, 
+            t: np.ndarray, 
+            perc: list[float] = None, 
+            norm: bool = True
+            ) -> np.ndarray:
+        """Computes a shared pseudotime trajectory across genes or cells.
+
+        Parameters
+        ----------
+        t
+            Array representing pseudotime estimates.
+        perc
+            List of quantiles to compute per gene (e.g., [15, 25, 50, 75, 85]).
+            If None, defaults to [15, 25, 50, 75, 85].
+        norm
+            Whether to normalize the shared time vector to the [0, 1] range.
+
+        Returns
+        -------
+        np.ndarray
+            The shared pseudotime vector across cells or genes, normalized if `norm=True`.
+        """
         nans = np.isnan(np.sum(t, axis=0))
         if np.any(nans):
             t = np.array(t[:, ~nans])
@@ -682,21 +686,32 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
     def add_regvelo_outputs_to_adata(
         self,
         n_samples: int = 30,
-        adata: Optional[AnnData] = None,
-        batch_size: Optional[int] = None,
-    ) -> AnnData:
-        """Returns the processed anndata object containing velocity and latent time layers
-        The code is adapted from veloVI repository (https://github.com/YosefLab/velovi/)
+        adata: AnnData = None,
+        batch_size: int = None,
+        ) -> AnnData:
+        """Adds RegVelo model outputs to the AnnData object.
+        This function computes latent time and velocity estimates and stores them in
+        `.layers` of the AnnData object. It also applies a per-gene scaling of latent time
+        to produce aligned fit values.
+
+        Adapted from the veloVI repository:
+        https://github.com/YosefLab/velovi/
 
         Parameters
         ----------
         n_samples
-            Number of posterior samples to use for estimation.
-        batch_size
-            Minibatch size for data loading into model. Defaults to `scvi.settings.batch_size`.
+            Number of posterior samples to draw for estimation.
         adata
-            AnnData object with equivalent structure to initial AnnData. If `None`, defaults to the
-            AnnData object used to initialize the model.
+            Annotated data object with the same structure as the one used during model setup.
+            If None, uses the registered AnnData.
+        batch_size
+            Mini-batch size for processing data. If None, uses the model's default batch size in SCVI.
+
+        Returns
+        -------
+        AnnData
+            A copy of the target-gene subset of the input AnnData with new layers:
+            `'velocity'`, `'latent_time_regvelo'`, `'fit_t'`, and `'fit_scaling'`.
         """
         if batch_size is None:
             batch_size = self.batch_size
@@ -718,7 +733,22 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         return adata_target
 
     @torch.inference_mode()
-    def get_rates(self):
+    def get_rates(self) -> dict[str, np.ndarray]:
+        """Returns the inferred kinetic parameters from the trained model.
+
+        This method extracts per-gene parameters from the trained decoder:
+        - beta (transcription rate)
+        - gamma (degradation rate)
+        - alpha_1 (initial transcriptional activation)
+
+        Returns
+        -------
+            dict
+                A dictionary containing the inferred kinetic parameters:
+                - "beta"
+                - "gamma"
+                - "alpha_1"
+        """
         gamma, beta, alpha_1= self.module._get_rates()
 
         return {
@@ -732,23 +762,25 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
     def setup_anndata(
         cls,
         adata: AnnData,
-        spliced_layer: Optional[str] = None,
-        unspliced_layer: Optional[str] = None,
+        spliced_layer: str = None,
+        unspliced_layer: str = None,
         **kwargs,
-    ) -> Optional[AnnData]:
-        """%(summary)s.
+        ) -> None:
+        """Sets up the AnnData object for use with REGVELOVI.
+
+        This method registers the necessary layers in the AnnData object for use in training
+        and inference.
 
         Parameters
         ----------
-        %(param_adata)s
+        adata
+            Annotated data object with spliced and unspliced layers.
         spliced_layer
-            Layer in adata with spliced normalized expression
+            Name of the layer in AnnData object that contains spliced normalized expression.
         unspliced_layer
-            Layer in adata with unspliced normalized expression.
-
-        Returns
-        -------
-        %(returns)s
+            Name of the layer in AnnData object that contains unspliced normalized expression.
+        **kwargs
+            Additional keyword arguments passed to the AnnDataManager.
         """
         setup_method_args = cls._get_setup_method_args(**locals())
         anndata_fields = [
@@ -764,11 +796,31 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
 
     def get_directional_uncertainty(
         self,
-        adata: Optional[AnnData] = None,
+        adata: AnnData = None,
         n_samples: int = 50,
         gene_list: Iterable[str] = None,
         n_jobs: int = -1,
-    ):
+        ) -> tuple[pd.DataFrame, np.ndarray]:
+        """Computes directional uncertainty metrics for RNA velocity vectors.
+
+        Parameters
+        ----------
+        adata
+            Annotated data object with the same structure as the one used during model setup.
+            If None, uses the registered AnnData.
+        n_samples
+            Number of posterior samples to draw for estimating directional uncertainty.
+        gene_list
+            List of genes to include in the analysis. If None, all genes are used.
+        n_jobs
+            Number of parallel jobs to use for computation. If -1, uses all available cores.
+
+        Returns
+        -------
+        tuple of pd.DataFrame and np.ndarray
+            A DataFrame containing directional variance, difference, and cosine similarity metrics
+            for each cell, indexed by cell names. The second element is a NumPy array of cosine similarities.
+        """
         adata = self._validate_anndata(adata)
 
         logger.info("Sampling from model...")
@@ -784,22 +836,25 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         return df, cosine_sims
 
     def get_permutation_scores(
-        self, labels_key: str, adata: Optional[AnnData] = None
-    ) -> Tuple[pd.DataFrame, AnnData]:
-        """Compute permutation scores.
+        self, 
+        labels_key: str, 
+        adata: AnnData = None
+        ) -> tuple[pd.DataFrame, AnnData]:
+        """Computes permutation scores for gene dynamics across cell types.
 
         Parameters
         ----------
         labels_key
-            Key in adata.obs encoding cell types
+            Key in `adata.obs` that specifies cell type labels.
         adata
-            AnnData object with equivalent structure to initial AnnData. If `None`, defaults to the
-            AnnData object used to initialize the model.
+            Annotated data object with the same structure as the one used during model setup.
+            If `None`, defaults to the AnnData object used to initialize the model.
 
         Returns
         -------
-        Tuple of DataFrame and AnnData. DataFrame is genes by cell types with score per cell type.
-        AnnData is the permutated version of the original AnnData.
+        tuple of pd.DataFrame and AnnData
+            - DataFrame of permutation scores for each gene and cell type.
+            - A permuted AnnData object used in the scoring procedure.
         """
         adata = self._validate_anndata(adata)
         adata_manager = self.get_anndata_manager(adata)
@@ -848,9 +903,27 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         return dynamical_df, bdata
 
     def _shuffle_layer_celltype(
-        self, adata_manager: AnnDataManager, labels_key: str, registry_key: str
-    ) -> AnnData:
-        """Shuffle cells within cell types for each gene."""
+        self, 
+        adata_manager: AnnDataManager, 
+        labels_key: str, 
+        registry_key: str
+        ) -> AnnData:
+        """Shuffles expression values within each cell type for a given data layer.
+        
+        Parameters
+        ----------
+        adata_manager
+            The AnnDataManager instance managing the AnnData object.
+        labels_key
+            Key in `adata.obs` that specifies cell type labels.
+        registry_key
+            Key in the data registry that specifies the layer to shuffle.
+
+        Returns
+        -------
+        AnnData
+            A copy of the AnnData object with shuffled expression values for the specified layer.
+        """
         from scvi.data._constants import _SCVI_UUID_KEY
 
         bdata = adata_manager.adata.copy()
@@ -886,8 +959,27 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
 
 
 def _compute_directional_statistics_tensor(
-    tensor: np.ndarray, n_jobs: int, n_cells: int
-) -> pd.DataFrame:
+    tensor: np.ndarray, 
+    n_jobs: int, 
+    n_cells: int
+    ) -> tuple[pd.DataFrame, np.ndarray]:
+    """Computes directional uncertainty metrics for velocity samples across cells.
+
+    Parameters
+    ----------
+    tensor
+        Velocity samples of shape (n_samples, n_cells, n_genes).
+    n_jobs
+        Number of parallel jobs to use (for cell-wise statistics).
+    n_cells
+        Total number of cells.
+
+    Returns
+    -------
+    tuple of pd.DataFrame and np.ndarray
+        - DataFrame with per-cell directional metrics.
+        - Cosine similarity tensor of shape (n_cells, n_samples).
+    """
     df = pd.DataFrame(index=np.arange(n_cells))
     df["directional_variance"] = np.nan
     df["directional_difference"] = np.nan
@@ -916,13 +1008,23 @@ def _compute_directional_statistics_tensor(
 
 def _directional_statistics_per_cell(
     tensor: np.ndarray,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Internal function for parallelization.
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Computes direction-based uncertainty metrics for a single cell.
 
     Parameters
     ----------
     tensor
-        Shape of samples by genes for a given cell.
+        Array of shape (n_samples, n_genes) representing sampled velocities for one cell.
+
+    Returns
+    -------
+    tuple of np.ndarray
+        - Cosine similarities for each sample with respect to the mean velocity.
+        - Variance of cosine similarities.
+        - Difference between 95th and 5th percentiles of cosine similarities.
+        - Variance of angles (in radians) between samples and mean velocity.
+        - Difference between 95th and 5th percentiles of angles.
+        - Mean cosine similarity across samples.
     """
     n_samples = tensor.shape[0]
     # over samples axis
@@ -942,13 +1044,37 @@ def _directional_statistics_per_cell(
 
 
 def _centered_unit_vector(vector: np.ndarray) -> np.ndarray:
-    """Returns the centered unit vector of the vector."""
+    """Returns a unit vector after mean-centering the input vector.
+
+    Parameters
+    ----------
+    vector
+        Input vector to be centered and normalized.
+
+    Returns
+    -------
+    np.ndarray
+        A unit vector with mean centered to zero.
+    """
     vector = vector - np.mean(vector)
     return vector / np.linalg.norm(vector)
 
 
 def _cosine_sim(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
-    """Returns cosine similarity of the vectors."""
+    """Computes the cosine similarity between two centered vectors.
+    
+    Parameters
+    ----------
+    v1
+        First vector to compare, should be mean-centered.
+    v2
+        Second vector to compare, should be mean-centered.
+
+    Returns
+    -------
+    np.ndarray
+        Cosine similarity in the range [-1.0, 1.0].
+    """
     v1_u = _centered_unit_vector(v1)
     v2_u = _centered_unit_vector(v2)
     return np.clip(np.dot(v1_u, v2_u), -1.0, 1.0)

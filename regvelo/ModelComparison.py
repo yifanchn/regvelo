@@ -15,8 +15,8 @@ from ._model import REGVELOVI
 import scvelo as scv
 
 
-from .tools.set_output import set_output
-from .tools._tsi import get_tsi_score
+from .tools._set_output import set_output
+from .metrics._tsi import get_tsi_score
 
 
 # Packages used for data type validation
@@ -24,21 +24,22 @@ from typing import List, Optional, Union, Dict
 from anndata import AnnData
 
 class ModelComparison:
-    """Compare different types of RegVelo models : cite:p: `Wang2025`.
+    """Compare different types of RegVelo models.
         
-        This class is used to compare different RegVelo models with different optimization mode (soft, hard, soft_regularized) and under different normalization factor lamda2.
-        User can evaluate and visulize competence of different types of models based on various side information (Real time, Pseudo Time, Stemness Score, Terminal States Identification, Cross Boundary Correctness) of cell.
-        Finally, it will return a barplot with best performed model marked, and its performance will also be highlighted by significance test.
-        
-        Examples
-        ----------
-        See notebook.
-        
-        """
-    def __init__(self,
-                 terminal_states: List = None,
-                 state_transition: Dict = None,
-                 n_states: int = None):
+    This class is used to compare different RegVelo models with different optimization mode (soft, hard, soft_regularized) and under different normalization factor lamda2.
+    User can evaluate and visulize competence of different types of models based on various side information (Real time, Pseudo Time, Stemness Score, Terminal States Identification, Cross Boundary Correctness) of cell.
+    Finally, it will return a barplot with best performed model marked, and its performance will also be highlighted by significance test.
+    
+    Notes
+    ----------
+    See accompanying notebook for usage examples.
+    """
+    def __init__(
+            self,
+            terminal_states: list[str] = None,
+            state_transition: dict = None,
+            n_states: int = None
+            ):
         """Initialize parameters in comparision object.
         
         Parameters
@@ -74,12 +75,29 @@ class ModelComparison:
         }
         self.MODEL_TRAINED = {}
     
-    def validate_input(self,
-                       adata: AnnData,
-                       model_list: List[str] = None,
-                       side_information: str = None,
-                       lam2: Union[List[float], float] = None,
-                       side_key: str = None) -> None:
+    def validate_input(
+            self,
+            adata: AnnData,
+            model_list: list[str] = None,
+            side_information: str = None,
+            lam2: List[float] | float = None,
+            side_key: str = None
+            ) -> None:
+        """Validate the input parameters for the ModelComparison class.
+        
+        Parameters
+        ----------
+        adata
+            Annotated data object.
+        model_list
+            A list of model types to be trained, including 'hard', 'soft', 'soft_regularized'.
+        side_information
+            Type of side information used for evaluation
+        lam2
+            Normalization parameter(s) for 'soft_regularized' mode.
+        side_key
+            Key in `adata.obs` corresponding to side information.
+        """
         
         # 1.Validate adata
         if not isinstance(adata, AnnData):
@@ -135,22 +153,24 @@ class ModelComparison:
                     if side_key not in adata.obs:
                         raise TypeError(f"Default side_key: {side_key} not found in adata.obs, please input it manualy with parameter: side_key")
     
-    def min_max_scaling(self,x):
+    def min_max_scaling(self, x):
         return (x - np.min(x)) / (np.max(x) - np.min(x)) 
     
     def train(
         self,
         adata: AnnData,
-        model_list: List[str],
-        lam2: Union[List[float], float] = None,
+        model_list: list[str],
+        lam2: list[float] | float = None,
         n_repeat: int = 1
-    ) -> List:
-        """Train all the possible models given by users, and stored them in a dictionary, where users can reach them easily and deal with them in batch.If there are already model trained and saved before, they won't be removed.
+        ) -> list[str]:
+        """Train all the possible models given by users, and stored them in a dictionary, 
+        where users can reach them easily and deal with them in batch.
+        If there are already model trained and saved before, they won't be removed.
         
         Parameters
         ----------
         adata
-            The annotated data matrix. After input of adata, the object will store it as self variable.
+            Annotated data object. After input of adata, the object will store it as self variable.
         model_list
             The list of valid model type, including 'Soft', 'Hard', 'Soft_regularized'
         lam2
@@ -211,8 +231,8 @@ class ModelComparison:
     def evaluate(
         self,
         side_information: str,
-        side_key:str = None
-        ) -> pd.DataFrame:
+        side_key: str = None
+        ) -> tuple[str, pd.DataFrame]:
         """Evaluate all of trained model under one specific side_information mode, For example, if user know the exact time or stage of cells, user can choose 'Real_Time' as reference; If users has used Pseudotime calculator such as CellRank beforehand, they can also choose 'Pseudo_Time' as reference.
         
         Parameters
@@ -224,7 +244,10 @@ class ModelComparison:
         
         Returns
         ----------
-        A dataframe records evaluation performance of all models.
+        df_name
+            A string represents the name of dataframe, which records evaluation performance of all models.
+        df
+            A dataframe records evaluation performance of all models.
         """
         self.validate_input(self.ADATA, side_information=side_information, side_key=side_key)
         correlations = []
@@ -251,7 +274,23 @@ class ModelComparison:
         adata: AnnData,
         side_information: str,
         side_key: str = None
-    ):
+        ) -> float:
+        """Compute model evaluation score under a given type of side information.
+        
+        Parameters
+        ----------
+        adata
+            Annotated data object.
+        side_information
+            One of: 'Pseudo_Time', 'Stemness_Score', 'Real_Time', 'TSI', 'CBC'.
+        side_key
+            Key in `adata.obs` corresponding to the side information.
+
+        Returns
+        ----------
+        float
+            Evaluation score.
+        """
         if side_information in ['Pseudo_Time', 'Stemness_Score', 'Real_Time']:
             if side_information in ['Pseudo_Time', 'Stemness_Score'] and side_key is None:
                 side_key = self.side_info_dict[side_information]
@@ -279,10 +318,10 @@ class ModelComparison:
     
     def plot_results(
         self,
-        side_information,
-        figsize = (6, None),
-        palette = 'lightpink'
-    ):
+        side_information: str,
+        figsize: tuple[float, float] = (6, None),
+        palette: str = 'lightpink'
+        ) -> None:
         """Visualize comparision result by barplot with scatters. The significant mark will only show with n_repeats more than 3, and p < 0.05.
         
         Paramters
@@ -384,7 +423,19 @@ class ModelComparison:
         plt.tight_layout()
         plt.show()
         
-    def get_significance(self, pvalue):
+    def get_significance(self, pvalue: float) -> str:
+        """Get significance level based on p-value.
+
+        Parameters
+        ----------
+        pvalue
+            P-value from statistical test.
+
+        Returns
+        ----------
+        str
+            Significance level as a string: "***", "**", "*", or "ns" (not significant).
+        """
         if pvalue < 0.001:
             return "***"
         elif pvalue < 0.01:
@@ -396,13 +447,33 @@ class ModelComparison:
     
     def _draw_significance_marker(
             self,
-            ax,
-            start,
-            end,
-            significance,
-            bracket_height=0.05,
-            linewidth=1.2,
-            text_offset=0.05):
+            ax: plt.Axes,
+            start: float,
+            end: float,
+            significance: str,
+            bracket_height: float = 0.05,
+            linewidth: float = 1.2,
+            text_offset: float = 0.05
+            ) -> None:
+        """Draw significance marker on the plot.
+
+        Parameters
+        ----------
+        ax
+            Matplotlib Axes object to draw on.
+        start
+            Y position of the first bar.
+        end
+            Y position of the second bar.
+        significance
+            Significance level to display (e.g., "***", "**", "*", "ns").
+        bracket_height
+            Height of the significance bracket.
+        linewidth
+            Width of the lines in the bracket.
+        text_offset
+            Horizontal offset for the significance text.
+        """
         
         if start > end:
             start, end = end, start

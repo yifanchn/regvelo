@@ -10,14 +10,15 @@ from sklearn.preprocessing import MinMaxScaler
 
 def preprocess_data(
     adata: AnnData,
-    spliced_layer: Optional[str] = "Ms",
-    unspliced_layer: Optional[str] = "Mu",
+    spliced_layer: str = "Ms",
+    unspliced_layer: str = "Mu",
     min_max_scale: bool = True,
     filter_on_r2: bool = True,
 ) -> AnnData:
-    """Preprocess data.
+    """Preprocess an AnnData object.
 
-    This function removes poorly detected genes and minmax scales the data.
+    This function optionally applies min-max scaling to the spliced and unspliced layers,
+    and filters genes based on the velocity regression results (velocity_r2 and gamma).
 
     Parameters
     ----------
@@ -28,13 +29,14 @@ def preprocess_data(
     unspliced_layer
         Name of the unspliced layer.
     min_max_scale
-        Min-max scale spliced and unspliced
+        Whether to apply min-max scaling to the spliced and unspliced layers.
     filter_on_r2
-        Filter out genes according to linear regression fit
+        Whether to filter genes based on the velocity regression results.
 
     Returns
     -------
-    Preprocessed adata.
+    AnnData
+        Preprocessed AnnData object.
     """
     if min_max_scale:
         scaler = MinMaxScaler()
