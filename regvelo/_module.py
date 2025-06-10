@@ -467,7 +467,7 @@ class VELOVAE(BaseModuleClass):
         regulator_list: list,
         activate: Literal["sigmoid", "softplus"] = "softplus",
         base_alpha: bool = True,
-        n_hidden: int = 128,
+        n_hidden: int = 256,
         n_latent: int = 10,
         n_layers: int = 1,
         lam: float = 1,

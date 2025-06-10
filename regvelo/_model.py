@@ -77,40 +77,12 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         (tensor of shape [n_targets, n_regulators]), where rows indicate targets and columns indicate regulators.
     regulators
         List of transcription factors.
+    soft_constraint
+        Whether to use a soft constraint mode (as opposed to a hard constraint).
     lam
         Regularization parameter controlling the strength of GRN prior incorporation.
     lam2
         Regularization parameter controlling the strength of L1 regularization on the Jacobian matrix.
-    vector_constraint
-        Whether to regularize the velocity vector.
-    bias_constraint
-        Whether to regularize the bias term (base transcription rate).
-    simple_dynamics
-        If True, uses a simplified version of RegVelo dynamics.
-    x0
-        Initial latent time for each cell.
-    t0
-        Initial transcription rate for each cell.
-    activate
-        Activation function used in modeling transcriptional kinetics.
-    base_alpha
-        Whether to include a base transcription rate in the model.
-    n_hidden
-        Number of nodes per hidden layer in the neural networks.
-    n_latent
-        Dimensionality of the latent space.
-    n_layers
-        Number of hidden layers in both encoder and decoder networks.
-    dropout_rate
-        Dropout rate applied in the neural networks.
-    gamma_init_data
-        If True, initialize degradation rate (gamma) using a data-driven technique.
-    linear_decoder
-        If True, use a linear decoder to map from latent space to time.
-    soft_constraint
-        Whether to use a soft constraint mode (as opposed to a hard constraint).
-    auto_regulation
-        If True, allows estimation of self-regulatory links in the GRN.
     **model_kwargs
         Additional keyword arguments passed to the :class:`~regvelo.VELOVAE` module.
     """
@@ -120,26 +92,14 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         adata: AnnData,
         W: torch.Tensor = None,
         regulators: list = None,
+        soft_constraint: bool = True,
         lam: float = 1,
         lam2: float = 0,
-        vector_constraint: bool = True,
-        bias_constraint: bool = True,
-        simple_dynamics: bool = False,
-        x0: np.ndarray = None,
-        t0: np.ndarray = None,
-        activate: Literal["sigmoid", "softplus"] = "softplus",
-        base_alpha: bool = True,
-        n_hidden: int = 256,
-        n_latent: int = 10,
-        n_layers: int = 1,
-        dropout_rate: float = 0.1,
-        gamma_init_data: bool = False,
-        linear_decoder: bool = False,
-        soft_constraint: bool = True,
-        auto_regulation: bool = False,
         **model_kwargs,
         ):
         super().__init__(adata)
+
+        n_latent = model_kwargs.get("n_latent", 10)
         self.n_latent = n_latent
         
         ## TODO:determine the batch size
@@ -166,6 +126,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         
         alpha_1_unconstr = np.zeros(us_upper.shape).ravel()
         
+        gamma_init_data = model_kwargs.get("gamma_init_data", False)
         if gamma_init_data:
             gamma_unconstr = np.clip(_softplus_inverse(us_upper / ms_upper), None, 10)
         else:
@@ -193,6 +154,9 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         else:
             regulator_list = None
             
+        simple_dynamics = model_kwargs.get("simple_dynamics", False)
+        vector_constraint = model_kwargs.get("vector_constraint", True)
+        bias_constraint = model_kwargs.get("bias_constraint", True)
         if simple_dynamics:
             vector_constraint = False
             bias_constraint = False
@@ -203,24 +167,15 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
             target_index = target_index,
             skeleton = W,
             regulator_list = regulator_list,
-            activate = activate,
-            base_alpha = base_alpha,
-            n_hidden = n_hidden,
             n_latent = n_latent,
-            n_layers = n_layers,
             lam = lam,
             lam2 = lam2,
             vector_constraint = vector_constraint,
             bias_constraint = bias_constraint,
-            dropout_rate = dropout_rate,
             gamma_unconstr_init = gamma_unconstr,
             alpha_unconstr_init = alpha_unconstr,
             alpha_1_unconstr_init = alpha_1_unconstr,
-            x0 = x0,
-            t0 = t0,
-            linear_decoder = linear_decoder,
             soft_constraint = soft_constraint,
-            auto_regulation = auto_regulation,
             **model_kwargs,
         )
         self._model_summary_string = (
