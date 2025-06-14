@@ -101,6 +101,9 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
 
         n_latent = model_kwargs.get("n_latent", 10)
         self.n_latent = n_latent
+        n_hidden = model_kwargs.get("n_hidden", 256)
+        n_layers = model_kwargs.get("n_layers", 1)
+        dropout_rate = model_kwargs.get("dropout_rate", 0.1)
         
         ## TODO:determine the batch size
         self.batch_size = adata.shape[0]
@@ -167,11 +170,14 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
             target_index = target_index,
             skeleton = W,
             regulator_list = regulator_list,
+            n_hidden = n_hidden,
             n_latent = n_latent,
+            n_layers = n_layers,
             lam = lam,
             lam2 = lam2,
             vector_constraint = vector_constraint,
             bias_constraint = bias_constraint,
+            dropout_rate = dropout_rate,
             gamma_unconstr_init = gamma_unconstr,
             alpha_unconstr_init = alpha_unconstr,
             alpha_1_unconstr_init = alpha_1_unconstr,
