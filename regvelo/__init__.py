@@ -1,4 +1,4 @@
-"""regvelo."""
+"""regvelo"""
 
 import logging
 
@@ -6,6 +6,7 @@ from rich.console import Console
 from rich.logging import RichHandler
 
 from regvelo import datasets
+from regvelo import metrics as mt
 from regvelo import tools as tl
 from regvelo import plotting as pl
 from regvelo import preprocessing as pp
@@ -16,7 +17,12 @@ from .ModelComparison import ModelComparison
 
 import sys  # isort:skip
 
-sys.modules.update({f"{__name__}.{m}": globals()[m] for m in ["tl", "pl", "pp"]})
+sys.modules.update({
+    f"{__name__}.metrics": mt,
+    f"{__name__}.tools": tl,
+    f"{__name__}.plotting": pl,
+    f"{__name__}.preprocessing": pp
+})
 
 # https://github.com/python-poetry/poetry/pull/2366#issuecomment-652418094
 # https://github.com/python-poetry/poetry/issues/144#issuecomment-623927302
@@ -49,5 +55,9 @@ __all__ = [
     "VELOVAE",
     "REGISTRY_KEYS",
     "datasets",
-    "ModelComparison"
+    "ModelComparison",
+    "metrics", "mt",
+    "tools", "tl",
+    "plotting", "pl",
+    "preprocessing", "pp"
 ]

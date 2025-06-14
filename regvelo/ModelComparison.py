@@ -15,8 +15,8 @@ from ._model import REGVELOVI
 import scvelo as scv
 
 
-from .tools.set_output import set_output
-from .tools._tsi import get_tsi_score
+from .tools._set_output import set_output
+from .metrics._tsi import get_tsi_score
 
 
 # Packages used for data type validation
@@ -84,7 +84,7 @@ class ModelComparison:
         # 1.Validate adata
         if not isinstance(adata, AnnData):
             raise TypeError(f"Expected AnnData object, got {type(adata).__name__}")
-        layers = ['Ms', 'Mu', 'fit_t']
+        layers = ['Ms', 'Mu']
         for layer in layers:
             if layer not in adata.layers:
                 raise ValueError(f"Missing required layer: {layer}")
@@ -143,7 +143,8 @@ class ModelComparison:
         adata: AnnData,
         model_list: List[str],
         lam2: Union[List[float], float] = None,
-        n_repeat: int = 1
+        n_repeat: int = 1,
+        batch_size=None
     ) -> List:
         """Train all the possible models given by users, and stored them in a dictionary, where users can reach them easily and deal with them in batch.If there are already model trained and saved before, they won't be removed.
         
@@ -155,6 +156,8 @@ class ModelComparison:
             The list of valid model type, including 'Soft', 'Hard', 'Soft_regularized'
         lam2
             Normalization factor used under 'soft_regularized' mode. A float or a list of float number in range of (0,1)
+        batch_size
+            Training batch size. This enable user to adjust batch size according to data size.
             
         Returns
         ----------
@@ -185,7 +188,7 @@ class ModelComparison:
                                 regulators=TF,
                                 lam2 = lambda2
                             )
-                            vae.train()
+                            vae.train(batch_size=batch_size)
                             self.MODEL_TRAINED[f"{model}\nlam2:{lambda2}_{nrun}"] = vae
                     else:
                         vae = REGVELOVI(
@@ -194,7 +197,7 @@ class ModelComparison:
                             regulators=TF,
                             lam2=lam2
                         )
-                        vae.train()
+                        vae.train(batch_size=batch_size)
                         self.MODEL_TRAINED[f"{model}_{nrun}"] = vae
                 else:
                     vae = REGVELOVI(
@@ -203,7 +206,7 @@ class ModelComparison:
                         regulators=TF,
                         soft_constraint=(model == 'soft')
                     )
-                    vae.train()
+                    vae.train(batch_size=batch_size)
                     self.MODEL_TRAINED[f"{model}_{nrun}"] = vae
 
         return list(self.MODEL_TRAINED.keys())
@@ -341,6 +344,7 @@ class ModelComparison:
         y_ticks = ax.get_yticks()
         model_positions = dict(zip(model_order, y_ticks))
         
+        base_line = 1
         for target_model in model_order:
             if target_model == ref_model:
                 continue
@@ -360,9 +364,11 @@ class ModelComparison:
                 continue
 
             if p_value < 0.05:
+                base_line += 0.05
                 significance = self.get_significance(p_value)
                 self._draw_significance_marker(
                     ax=ax,
+                    base_line=base_line,
                     start=model_positions[ref_model],
                     end=model_positions[target_model],
                     significance=significance,
@@ -397,17 +403,18 @@ class ModelComparison:
     def _draw_significance_marker(
             self,
             ax,
+            base_line,
             start,
             end,
             significance,
             bracket_height=0.05,
             linewidth=1.2,
-            text_offset=0.05):
+            text_offset=0.03):
         
         if start > end:
             start, end = end, start
         x_max = ax.get_xlim()[1]
-        bracket_level = max(start, end) + bracket_height
+        bracket_level = base_line + bracket_height
         
         ax.plot(
             [bracket_level-0.02, bracket_level, bracket_level, bracket_level-0.02],

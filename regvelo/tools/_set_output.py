@@ -9,23 +9,28 @@ from typing import Any
 
 
 def set_output(
-    adata : AnnData, 
-    vae : Any, 
+    adata: AnnData, 
+    vae: Any, 
     n_samples: int = 30, 
-    batch_size: int | None = None
+    batch_size: int = None
     ) -> None:
-    """
-    Add inference results to adata.
+    """Add inference results to adata.
+
     Parameters
     ----------
-    adata : AnnData
+    adata
         Annotated data matrix.
-    vae : Any
+    vae
         RegVelo model
-    n_samples : int, optional
-        Number of posterior samples to use for estimation. Default is 30.
-    batch_size : int, optional
-        Minibatch size for data loading into model. Defaults to `scvi.settings.batch_size`.
+    n_samples
+        Number of posterior samples to use for estimation.
+    batch_size
+        Minibatch size for data loading into model. If None, uses `scvi.settings.batch_size`.
+
+    Returns
+    -------
+    None
+        The function modifies `adata` in place by adding layers and variables with inferred values.
     """
     
     latent_time = vae.get_latent_time(n_samples=n_samples, batch_size=batch_size)

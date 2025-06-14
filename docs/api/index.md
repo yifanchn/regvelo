@@ -1,38 +1,18 @@
 # API
 
-```{eval-rst}
-.. currentmodule:: regvelo
+Import `regvelo` as:
+
+```
+import regvelo as rgv
 ```
 
-```{eval-rst}
-.. autosummary::
-   :toctree: reference/
-   :nosignatures:
+```{toctree}
+:maxdepth: 2
 
-   REGVELOVI
-```
-
-```{eval-rst}
-.. autosummary::
-   :toctree: reference/
-   :template: class_no_inherited.rst
-   :nosignatures:
-
-   VELOVAE
-```
-
-```{eval-rst}
-.. autosummary::
-   :toctree: reference/
-   :nosignatures:
-
-   TFscreening
-```
-
-```{eval-rst}
-.. autosummary::
-   :toctree: reference/
-   :nosignatures:
-
-   in_silico_block_simulation
+datasets
+preprocessing
+model
+tools
+metrics
+plotting
 ```

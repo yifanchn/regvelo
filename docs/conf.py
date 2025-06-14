@@ -1,13 +1,23 @@
+# Configuration file for the Sphinx documentation builder.
+#
+# This file only contains a selection of the most common options. For a full
+# list see the documentation:
+# https://www.sphinx-doc.org/en/master/usage/configuration.html
+
+# -- Path setup --------------------------------------------------------------
+import sys
+from datetime import datetime
+from pathlib import Path
+
 from typing import Any
 import subprocess
 import os
 import importlib
 import inspect
 import re
-import sys
-from datetime import datetime
+
 from importlib.metadata import metadata
-from pathlib import Path
+
 
 HERE = Path(__file__).parent
 sys.path[:0] = [str(HERE.parent), str(HERE / "extensions")]
@@ -25,6 +35,7 @@ repository_url = "https://github.com/theislab/regvelo"
 # The full version, including alpha/beta/rc tags
 release = "0.2.0"
 
+# bibliography
 bibtex_bibfiles = ["references.bib"]
 bibtex_reference_style = "author_year"
 
@@ -56,6 +67,7 @@ extensions = [
     "sphinx.ext.extlinks",
     *[p.stem for p in (HERE / "extensions").glob("*.py")],
     "sphinx_copybutton",
+    "sphinx_design",
 ]
 
 autosummary_generate = True

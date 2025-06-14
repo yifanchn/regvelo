@@ -11,7 +11,7 @@ from typing import Dict, Optional, Sequence, Tuple, Union
 from .._model import REGVELOVI
 
 def split_elements(character_list):
-    """split elements."""
+    """Split elements."""
     result_list = []
     for element in character_list:
         if '_' in element:
@@ -22,7 +22,7 @@ def split_elements(character_list):
     return result_list
 
 def combine_elements(split_list):
-    """combine elements."""
+    """Combine elements."""
     result_list = []
     for parts in split_list:
         combined_element = "_".join(parts)
@@ -30,17 +30,11 @@ def combine_elements(split_list):
     return result_list
 
 def get_list_name(lst):
+    """Get the names of the elements in a dictionary."""
     names = []
     for name, obj in lst.items():
         names.append(name)
     return names
 
-def p_adjust_bh(p):
-    """Benjamini-Hochberg p-value correction for multiple hypothesis testing."""
-    p = np.asfarray(p)
-    by_descend = p.argsort()[::-1]
-    by_orig = by_descend.argsort()
-    steps = float(len(p)) / np.arange(len(p), 0, -1)
-    q = np.minimum(1, np.minimum.accumulate(steps * p[by_descend]))
-    return q[by_orig]
+
 

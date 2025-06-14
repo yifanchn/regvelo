@@ -57,6 +57,7 @@ matplotlib = ">=3.7.3"
 sphinx = {version = ">=4.1", optional = true}
 sphinx-autodoc-typehints = {version = "*", optional = true}
 torch = "<2.6.0"
+sphinx_design = ">=0.3.0"
 
 
 [tool.poetry.extras]
@@ -71,6 +72,7 @@ docs = [
   "sphinxcontrib-bibtex",
   "ipykernel",
   "ipython",
+  "sphinx_design"
 ]
 tutorials = ["scanpy"]
 

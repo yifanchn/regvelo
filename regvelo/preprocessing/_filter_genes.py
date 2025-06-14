@@ -4,7 +4,7 @@ import pandas as pd
 from anndata import AnnData
 
 def filter_genes(adata: AnnData) -> AnnData:
-    """Filter genes in an AnnData object to ensure each gene has upstream regulators.
+    """Filter genes in an AnnData object to ensure each gene has at least one upstream regulator in the GRN.
 
     The function iteratively refines the skeleton matrix to maintain only genes with regulatory connections. Only used
     by `soft_constraint=False` RegVelo model.
@@ -12,8 +12,7 @@ def filter_genes(adata: AnnData) -> AnnData:
     Parameters
     ----------
     adata
-        Annotated data object (AnnData) containing gene expression data, a skeleton matrix of regulatory interactions,
-        and a list of regulators.
+        Annotated data object (AnnData) containing gene expression data, `adata.uns["skeleton"]`, and a list of regulators.
 
     Returns
     -------

@@ -1,50 +1,51 @@
 import numpy as np
 import pandas as pd
 
-def markov_density_simulation(
-    adata : "AnnData",
-    T : np.ndarray, 
-    start_indices, 
-    terminal_indices, 
-    terminal_states,
-    n_steps : int = 100, 
-    n_simulations : int = 200, 
-    method: str = "stepwise", 
-    seed : int = 0,
-):
+from anndata import AnnData
+from typing import Literal
 
-    """
-    Simulate transitions on a velocity-derived Markov transition matrix.
+def markov_density_simulation(
+    adata: AnnData,
+    T: np.ndarray, 
+    start_indices: list[int], 
+    terminal_indices: list[int], 
+    terminal_states: list[str],
+    n_steps: int = 100, 
+    n_simulations: int = 200, 
+    method: Literal["stepwise", "one-step"] = "stepwise",
+    seed: int = 0,
+    ) -> tuple[pd.Series, pd.Series]:
+
+    """Simulate transitions on a velocity-derived Markov transition matrix.
 
     Parameters
     ----------
-    adata : AnnData
+    adata
         Annotated data object.
-    T : np.ndarray
+    T
         Transition matrix of shape (n_cells, n_cells).
-    start_indices : array-like
+    start_indices
         Indices of starting cells.
-    terminal_indices : array-like
-        Indices of terminal (absorbing) cells.
-    terminal_states : array-like
+    terminal_indices
+        Indices of terminal cells.
+    terminal_states
         Labels of terminal states corresponding to cells in `adata.obs["term_states_fwd"]`.
-    n_steps : int, optional
-        Maximum number of steps per simulation (default: 100).
-    n_simulations : int, optional
-        Number of simulations per starting cell (default: 200).
-    method : {'stepwise', 'one-step'}, optional
-        Simulation method to use:
+    n_steps
+        Maximum number of steps per simulation.
+    n_simulations
+        Number of simulations per starting cell.
+    method
+        Simulation method {'stepwise', 'one-step'} to use:
         - 'stepwise': simulate trajectories step by step.
         - 'one-step': sample directly from T^n.
-    seed : int, optional
-        Random seed for reproducibility (default: 0).
+    seed
+        Random seed for reproducibility.
 
     Returns
     -------
-    visits : pd.Series
-        Number of simulations that ended in each terminal cell.
-    visits_dens : pd.Series
-        Proportion of simulations that ended in each terminal cell.
+    tuple
+        - pd.Series containing number of simulations that ended in each terminal cell.
+        - pd.Series containing proportion of simulations that ended in each terminal cell.
     """
     np.random.seed(seed)
     

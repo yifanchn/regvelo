@@ -1,19 +1,21 @@
 from typing import Any, List, Set
+from anndata import AnnData 
 
-from anndata import AnnData
 
-
-def generate_sequence(k: int, n: int) -> List[int]:
-    """Generates a sequence of numbers from 1 to k. If the length of the sequence is less than n, the remaining positions are filled with the value k.
+def generate_sequence(k: int, n: int) -> list[int]:
+    """Generate a sequence from 1 to k. If the length of the sequence is less than n, the remaining positions are filled with the value k.
 
     Parameters
     ----------
-        k: The last value to appear in the initial sequence.
-        n: The target length of the sequence.
+    k
+        Maximum value in the initial sequence, which will be the last value in the sequence.
+    n
+        Desired length of the output sequence.
 
     Returns
     -------
-        List[int]: A list of integers from 1 to k, padded with k to length n if necessary.
+    list
+        A list of integers from 1 to k, padded with k to length n if necessary.
     """
     sequence = list(range(1, k + 1))
 
@@ -34,29 +36,28 @@ def plot_tsi(
     terminal_states: Set[str],
     cluster_key: str,
     max_states: int = 12,
-) -> List[int]:
-    """Calculate the number of unique terminal states for each macrostate count.
+    ) -> list[int]:
+    """Compute the number of unique terminal states for each macrostate count.
 
     Parameters
     ----------
     adata
-        Annotated data matrix (e.g., from single-cell experiments).
+        Annotated data matrix.
     kernel
         Computational kernel used to compute macrostates and predict terminal states.
     threshold
         Stability threshold for predicting terminal states.
     terminal_states
-        Set of known terminal state names to match against.
+        Known terminal states.
     cluster_key
-        Key in `adata.obs` that identifies cluster assignments for cells.
+        Key in `adata.obs` for cluster annotations.
     max_states
-        Maximum number of macrostates to consider. Default is 12.
+        Maximum number of macrostates to consider, by default 12.
 
     Returns
     -------
-    list of int
-        A list where each entry represents the count of unique terminal states found
-        at each macrostate count from 1 to `max_states`.
+    list
+        Number of recovered terminal states for each macrostate count.
     """
     # Create a mapping of state identifiers to their corresponding types
     all_states = list(set(adata.obs[cluster_key].tolist()))
@@ -93,13 +94,13 @@ def plot_tsi(
 
 def get_tsi_score(
     adata: AnnData,
-    points: List[float],
+    points: list[float],
     cluster_key: str,
     terminal_states: Set[str],
     kernel: Any,
     max_states: int = 12,
-) -> List[float]:
-    """Calculate the Terminal State Integration (TSI) score for given thresholds.
+    ) -> list[float]:
+    """Calculate the Terminal State Integration (TSI) score for a range of thresholds.
 
     Parameters
     ----------
@@ -108,17 +109,17 @@ def get_tsi_score(
     points
         List of threshold values to evaluate for stability of terminal states.
     cluster_key
-        Key in `adata.obs` to access cluster assignments for cells.
+        Key in `adata.obs` for cluster annotations.
     terminal_states
-        Set of known terminal state names to match against.
+        Set of known terminal states for evaluation.
     kernel
         Computational kernel used to compute macrostates and predict terminal states.
     max_states
-        Maximum number of macrostates to consider. Default is 12.
+        Maximum number of macrostates to consider, by default 12.
 
     Returns
     -------
-    list of float
+    list
         A list of TSI scores, one for each threshold in `points`. Each score represents
         the normalized area under the staircase function compared to the goal sequence.
     """

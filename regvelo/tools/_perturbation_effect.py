@@ -5,21 +5,20 @@ from anndata import AnnData
 from typing import Union, Sequence
 
 def perturbation_effect(
-    adata_perturb : AnnData,
-    adata : AnnData,
-    terminal_state : Union[str, Sequence[str]],
+    adata_perturb: AnnData,
+    adata: AnnData,
+    terminal_state: str | Sequence[str],
     ) -> AnnData:
-    """
-    Compute change in fate probabilities towards terminal states after perturbation. Negative values correspond to a decrease in
+    """Compute change in fate probabilities towards terminal states after perturbation. Negative values correspond to a decrease in
     probabilities, while positive values indicate an increase.
 
     Parameters
     ----------
-    adata_perturb : AnnData
+    adata_perturb
         Annotated data matrix of perturbed GRN.
-    adata : AnnData
+    adata
         Annotated data matrix of unperturbed GRN.
-    terminal_state : str or Sequence[str]
+    terminal_state
         List of terminal states to compute probabilities for.
 
     Returns
