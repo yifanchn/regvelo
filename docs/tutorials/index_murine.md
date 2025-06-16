@@ -1,7 +1,7 @@
 # Murine Neural Crest Development
 
 ```{toctree}
-:maxdepth:1
+:maxdepth: 1
 :titlesonly:
 
 murine/01_SCENIC_tutorial
