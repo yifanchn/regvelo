@@ -186,16 +186,35 @@ def linkcode_resolve(domain, info):
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_book_theme"
+html_theme = "furo"
 html_static_path = ["_static"]
+html_css_files = [
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css",
+]
 html_title = "RegVelo"
 
+html_show_sphinx = False
+html_show_sourcelink = False
 html_theme_options = {
-    "repository_url": github_repo,
-    "use_repository_button": True,
+    "light_css_variables": {
+        "color-brand-primary": "#003262",
+        "color-brand-content": "#003262",
+        "admonition-font-size": "var(--font-size-normal)",
+        "admonition-title-font-size": "var(--font-size-normal)",
+        "code-font-size": "var(--font-size--small)",
+    },
+    "footer_icons": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/theislab/regvelo",
+            "html": "",
+            "class": "fab fa-github",
+        },
+    ],
 }
 
-pygments_style = "default"
+pygments_style = "tango"
+pygments_dark_style = "monokai"
 
 nitpick_ignore = [
     # If building the documentation fails because of a missing link that is outside your control,

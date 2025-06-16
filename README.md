@@ -19,7 +19,7 @@ Please refer to the [Tutorials](https://regvelo.readthedocs.io/en/latest/index.h
 
 ## Installation
 
-You need to have Python 3.8 or newer installed on your system. If you don't have
+You need to have Python 3.10 or newer installed on your system. If you don't have
 Python installed, we recommend installing [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
 
 To create and activate a new environment
