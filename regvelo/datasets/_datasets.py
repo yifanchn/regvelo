@@ -19,6 +19,7 @@ def zebrafish_nc(file_path: str | Path = "data/zebrafish_nc/adata_zebrafish_prep
 
     This dataset contains Smart-seq3 data across seven time points during NC development,
     including four distinct phases:
+
     1. Specification at the neural plate border (NPB),
     2. Epithelial-to-mesenchymal transition (EMT) from the neural tube,
     3. Peripheral migration, and
@@ -37,9 +38,9 @@ def zebrafish_nc(file_path: str | Path = "data/zebrafish_nc/adata_zebrafish_prep
     return adata
 
 def zebrafish_grn(file_path: str | Path = "data/zebrafish_nc/prior_GRN.csv") -> pd.DataFrame:
-    """Load prior gene regulatory network (GRN) for zebrafish neural crest cells.
+    r"""Load prior gene regulatory network (GRN) for zebrafish neural crest cells.
 
-    Parameters:
+    Parameters
     ---------
     file_path
         Path to save the GRN dataset locally and to read it from.
@@ -52,21 +53,26 @@ def zebrafish_grn(file_path: str | Path = "data/zebrafish_nc/prior_GRN.csv") -> 
     grn.to_csv(file_path)
     return grn
 
-def murine_nc(data_type: Literal["preprocessed", "normalized", "velocyto"] = "preprocessed") -> AnnData:
-    """Load mouse neural crest single-cell RNA-seq dataset (subset of Qiu et al.).
+def murine_nc(data_type: Literal['preprocessed', 'normalized', 'velocyto'] = 'preprocessed') -> AnnData:
+    r"""Load mouse neural crest single-cell RNA-seq dataset (subset of Qiu et al.).
 
     The dataset is available in three variants: 
-    - :obj:"preprocessed" (default) 
-    - :obj:"normalized" 
-    - :obj:"velocyto"
 
-    The gene regulatory network (GRN) is saved in `adata.uns["skeleton"]`, 
+    - 'preprocessed' (default) 
+    - 'normalized' 
+    - 'velocyto'
+
+    The gene regulatory network (GRN) is saved in `adata.uns['skeleton']`, 
     which is learned via pySCENIC.
 
     Parameters
     ----------
     data_type
-        Data version to load. Options are: "preprocessed" (default), "normalized", "velocyto".
+        Data version to load. Options are: 
+        
+        - 'preprocessed' (default), 
+        - 'normalized', 
+        - 'velocyto'.
 
     Returns
     -------
@@ -90,6 +96,11 @@ def murine_nc(data_type: Literal["preprocessed", "normalized", "velocyto"] = "pr
 def human_limb(file_path: str | Path = "data/humanlimb/adata_humanlimb_preprocessed.h5ad") -> AnnData:
     """Load human limb single-cell RNA-seq dataset.
 
+    Parameters
+    ----------
+    file_path
+        Path to local dataset. Will download from remote URL if not found.
+        
     Returns
     -------
     Annotated data object of human limb cells.
