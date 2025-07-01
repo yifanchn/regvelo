@@ -64,7 +64,7 @@ class ModifiedTrainingPlan(TrainingPlan):
         return scvi_loss.loss
 
 class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
-    """Class implementing Regulatory Velocity Variational Inference (REGVELOVI).
+    r"""Class implementing Regulatory Velocity Variational Inference (REGVELOVI).
 
     This model extends the VAE framework to incorporate gene regulatory network (GRN) priors
     into RNA velocity modeling.
@@ -210,7 +210,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         optimizer: str = "AdamW",
         **trainer_kwargs,
         ):
-        """Train the REGVELOVI model.
+        r"""Train the REGVELOVI model.
         This method uses a modified SCVI TrainingPlan and TrainRunner to optimize model parameters
         using the registered AnnData object. It supports early stopping, gradient clipping, and 
         custom optimizer settings.
@@ -293,7 +293,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         return_mean: bool = True,
         return_numpy: bool = None,
         ) -> np.ndarray | pd.DataFrame:
-        """Returns the inferred latent time for each cell and gene.
+        r"""Returns the inferred latent time for each cell and gene.
 
         This function samples from the posterior distribution of the model to estimate 
         latent transcriptional time for each gene in each cell. It supports subsampling, 
@@ -325,10 +325,9 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
 
         Returns
         -------
-        np.ndarray or pd.DataFrame
-            If `n_samples > 1` and `return_mean` is False, returns an array of shape 
-            (samples, cells, genes). Otherwise, returns (cells, genes), as either a 
-            NumPy array or DataFrame depending on `return_numpy`.
+        If `n_samples > 1` and `return_mean` is False, returns an array of shape 
+        (samples, cells, genes). Otherwise, returns (cells, genes), as either a 
+        NumPy array or DataFrame depending on `return_numpy`.
         """
         adata = self._validate_anndata(adata)
         if indices is None:
@@ -406,7 +405,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         return_numpy: bool = None,
         clip: bool = True,
         ) -> np.ndarray | pd.DataFrame:
-        """Returns velocity estimates for each gene in each cell.
+        r"""Returns velocity estimates for each gene in each cell.
 
         This function samples from the posterior and computes the expected RNA velocity
         as a function of unspliced and spliced abundances. Supports subsampling, batching,
@@ -440,10 +439,9 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
 
         Returns
         -------
-        np.ndarray or pd.DataFrame
-            If `n_samples > 1` and `return_mean` is False, returns an array of shape 
-            (samples, cells, genes). Otherwise, returns (cells, genes), as either a 
-            NumPy array or DataFrame depending on `return_numpy`.
+        If `n_samples > 1` and `return_mean` is False, returns an array of shape 
+        (samples, cells, genes). Otherwise, returns (cells, genes), as either a 
+        NumPy array or DataFrame depending on `return_numpy`.
         """
         adata = self._validate_anndata(adata)
         if indices is None:
@@ -531,7 +529,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         return_mean: bool = True,
         return_numpy: bool = None,
         ) -> tuple[np.ndarray, np.ndarray] | tuple[pd.DataFrame, pd.DataFrame]:
-        """Returns the model-fitted unspliced and spliced expression (u(t), s(t)).
+        r"""Returns the model-fitted unspliced and spliced expression (u(t), s(t)).
 
         This function estimates the predicted unspliced and spliced abundances for each gene
         in each cell by sampling from the posterior.
@@ -557,10 +555,9 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
 
         Returns
         -------
-        tuple of np.ndarray or pd.DataFrame
-            A tuple containing model-fitted spliced and unspliced abundances.
-            If `n_samples > 1` and `return_mean` is False, arrays are of shape (samples, cells, genes).
-            Otherwise, shape is (cells, genes). Return type depends on `return_numpy`.
+        A tuple containing model-fitted spliced and unspliced abundances.
+        If `n_samples > 1` and `return_mean` is False, arrays are of shape (samples, cells, genes).
+        Otherwise, shape is (cells, genes). Return type depends on `return_numpy`.
         """
         adata = self._validate_anndata(adata)
 
@@ -648,7 +645,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
             perc: list[float] = None, 
             norm: bool = True
             ) -> np.ndarray:
-        """Computes a shared pseudotime trajectory across genes or cells.
+        r"""Computes a shared pseudotime trajectory across genes or cells.
 
         Parameters
         ----------
@@ -662,8 +659,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
 
         Returns
         -------
-        np.ndarray
-            The shared pseudotime vector across cells or genes, normalized if `norm=True`.
+        The shared pseudotime vector across cells or genes, normalized if ``norm=True``.
         """
         nans = np.isnan(np.sum(t, axis=0))
         if np.any(nans):
@@ -695,7 +691,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         adata: AnnData = None,
         batch_size: int = None,
         ) -> AnnData:
-        """Adds RegVelo model outputs to the AnnData object.
+        r"""Adds RegVelo model outputs to the AnnData object.
         This function computes latent time and velocity estimates and stores them in
         `.layers` of the AnnData object. It also applies a per-gene scaling of latent time
         to produce aligned fit values.
@@ -715,9 +711,12 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
 
         Returns
         -------
-        AnnData
-            A copy of the target-gene subset of the input AnnData with new layers:
-            `'velocity'`, `'latent_time_regvelo'`, `'fit_t'`, and `'fit_scaling'`.
+        A copy of the target-gene subset of the input AnnData with new layers:
+
+        - ``'velocity'``,
+        - ``'latent_time_regvelo'``,
+        - ``'fit_t'``, and
+        - ``'fit_scaling'``.
         """
         if batch_size is None:
             batch_size = self.batch_size
@@ -740,20 +739,21 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
 
     @torch.inference_mode()
     def get_rates(self) -> dict[str, np.ndarray]:
-        """Returns the inferred kinetic parameters from the trained model.
+        r"""Returns the inferred kinetic parameters from the trained model.
 
         This method extracts per-gene parameters from the trained decoder:
+
         - beta (transcription rate)
         - gamma (degradation rate)
         - alpha_1 (initial transcriptional activation)
 
         Returns
         -------
-            dict
-                A dictionary containing the inferred kinetic parameters:
-                - "beta"
-                - "gamma"
-                - "alpha_1"
+        A dictionary containing the inferred kinetic parameters:
+
+        - ``"beta"``,
+        - ``"gamma"``,
+        - ``"alpha_1"``.
         """
         gamma, beta, alpha_1= self.module._get_rates()
 
@@ -772,7 +772,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         unspliced_layer: str = None,
         **kwargs,
         ) -> None:
-        """Sets up the AnnData object for use with REGVELOVI.
+        r"""Sets up the AnnData object for use with REGVELOVI.
 
         This method registers the necessary layers in the AnnData object for use in training
         and inference.
@@ -807,7 +807,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         gene_list: Iterable[str] = None,
         n_jobs: int = -1,
         ) -> tuple[pd.DataFrame, np.ndarray]:
-        """Computes directional uncertainty metrics for RNA velocity vectors.
+        r"""Computes directional uncertainty metrics for RNA velocity vectors.
 
         Parameters
         ----------
@@ -823,9 +823,10 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
 
         Returns
         -------
-        tuple of pd.DataFrame and np.ndarray
-            A DataFrame containing directional variance, difference, and cosine similarity metrics
-            for each cell, indexed by cell names. The second element is a NumPy array of cosine similarities.
+        
+        - DataFrame containing directional variance, difference, and cosine similarity metrics
+            for each cell, indexed by cell names. 
+        - The second element is a NumPy array of cosine similarities.
         """
         adata = self._validate_anndata(adata)
 
@@ -846,7 +847,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         labels_key: str, 
         adata: AnnData = None
         ) -> tuple[pd.DataFrame, AnnData]:
-        """Computes permutation scores for gene dynamics across cell types.
+        r"""Computes permutation scores for gene dynamics across cell types.
 
         Parameters
         ----------
@@ -858,9 +859,9 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
 
         Returns
         -------
-        tuple of pd.DataFrame and AnnData
-            - DataFrame of permutation scores for each gene and cell type.
-            - A permuted AnnData object used in the scoring procedure.
+        
+        - DataFrame of permutation scores for each gene and cell type.
+        - A permuted AnnData object used in the scoring procedure.
         """
         adata = self._validate_anndata(adata)
         adata_manager = self.get_anndata_manager(adata)
@@ -914,7 +915,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
         labels_key: str, 
         registry_key: str
         ) -> AnnData:
-        """Shuffles expression values within each cell type for a given data layer.
+        r"""Shuffles expression values within each cell type for a given data layer.
         
         Parameters
         ----------
@@ -927,8 +928,7 @@ class REGVELOVI(VAEMixin, UnsupervisedTrainingMixin, BaseModelClass):
 
         Returns
         -------
-        AnnData
-            A copy of the AnnData object with shuffled expression values for the specified layer.
+        A copy of the AnnData object with shuffled expression values for the specified layer.
         """
         from scvi.data._constants import _SCVI_UUID_KEY
 
@@ -969,7 +969,7 @@ def _compute_directional_statistics_tensor(
     n_jobs: int, 
     n_cells: int
     ) -> tuple[pd.DataFrame, np.ndarray]:
-    """Computes directional uncertainty metrics for velocity samples across cells.
+    r"""Computes directional uncertainty metrics for velocity samples across cells.
 
     Parameters
     ----------
@@ -982,9 +982,9 @@ def _compute_directional_statistics_tensor(
 
     Returns
     -------
-    tuple of pd.DataFrame and np.ndarray
-        - DataFrame with per-cell directional metrics.
-        - Cosine similarity tensor of shape (n_cells, n_samples).
+    
+    - DataFrame with per-cell directional metrics.
+    - Cosine similarity tensor of shape ``(n_cells, n_samples)``.
     """
     df = pd.DataFrame(index=np.arange(n_cells))
     df["directional_variance"] = np.nan
@@ -1015,7 +1015,7 @@ def _compute_directional_statistics_tensor(
 def _directional_statistics_per_cell(
     tensor: np.ndarray,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Computes direction-based uncertainty metrics for a single cell.
+    r"""Computes direction-based uncertainty metrics for a single cell.
 
     Parameters
     ----------
@@ -1024,13 +1024,13 @@ def _directional_statistics_per_cell(
 
     Returns
     -------
-    tuple of np.ndarray
-        - Cosine similarities for each sample with respect to the mean velocity.
-        - Variance of cosine similarities.
-        - Difference between 95th and 5th percentiles of cosine similarities.
-        - Variance of angles (in radians) between samples and mean velocity.
-        - Difference between 95th and 5th percentiles of angles.
-        - Mean cosine similarity across samples.
+    
+    - Cosine similarities for each sample with respect to the mean velocity.
+    - Variance of cosine similarities.
+    - Difference between 95th and 5th percentiles of cosine similarities.
+    - Variance of angles (in radians) between samples and mean velocity.
+    - Difference between 95th and 5th percentiles of angles.
+    - Mean cosine similarity across samples.
     """
     n_samples = tensor.shape[0]
     # over samples axis
@@ -1050,7 +1050,7 @@ def _directional_statistics_per_cell(
 
 
 def _centered_unit_vector(vector: np.ndarray) -> np.ndarray:
-    """Returns a unit vector after mean-centering the input vector.
+    r"""Returns a unit vector after mean-centering the input vector.
 
     Parameters
     ----------
@@ -1059,15 +1059,14 @@ def _centered_unit_vector(vector: np.ndarray) -> np.ndarray:
 
     Returns
     -------
-    np.ndarray
-        A unit vector with mean centered to zero.
+    A unit vector with mean centered to zero.
     """
     vector = vector - np.mean(vector)
     return vector / np.linalg.norm(vector)
 
 
 def _cosine_sim(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
-    """Computes the cosine similarity between two centered vectors.
+    r"""Computes the cosine similarity between two centered vectors.
     
     Parameters
     ----------
@@ -1078,8 +1077,7 @@ def _cosine_sim(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
 
     Returns
     -------
-    np.ndarray
-        Cosine similarity in the range [-1.0, 1.0].
+    Cosine similarity in the range [-1.0, 1.0].
     """
     v1_u = _centered_unit_vector(v1)
     v2_u = _centered_unit_vector(v2)

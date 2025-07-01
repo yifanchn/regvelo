@@ -6,7 +6,7 @@ import cellrank as cr
 from anndata import AnnData
 from scvelo import logging as logg
 import os, shutil
-from typing import Dict, Optional, Sequence, Tuple, Union, Literal
+from typing import Literal
 
 from .._model import REGVELOVI
 from ._utils import split_elements, combine_elements
@@ -17,14 +17,14 @@ def TFScanning_func(
     model: str, 
     adata: AnnData, 
     cluster_label: str = None,
-    terminal_states: str | Sequence[str] | dict[str, Sequence[str]] | pd.Series = None,
-    KO_list: str | Sequence[str] | dict[str, Sequence[str]] | pd.Series = None,
-    n_states: int | Sequence[int] = None,
-    cutoff: float | Sequence[float] = 1e-3,
+    terminal_states: str | list[str] | dict[str, list[str]] | pd.Series = None,
+    KO_list: str | list[str] | dict[str, list[str]] | pd.Series = None,
+    n_states: int | list[int] = None,
+    cutoff: float | list[float] = 1e-3,
     method: Literal["likelihood", "t-statistics"] = "likelihood",
     combined_kernel: bool = False,
     ) -> dict[str, float | pd.DataFrame]:
-    """Perform in silico TF regulon knock-out screening
+    r"""Perform in silico TF regulon knock-out screening
 
     Parameters
     ----------
@@ -33,9 +33,9 @@ def TFScanning_func(
     adata
         Annotated data matrix.
     cluster_label
-        Key in `adata.obs` to associate names and colors with :attr:`terminal_states`.
+        Key in ``adata.obs`` to associate names and colors with ``terminal_states``.
     terminal_states
-        Subset of :attr:`macrostates`.
+        Subset of ``macrostates``.
     KO_list
         List of TF names or combinations (e.g., ["geneA", "geneB_geneC"]).
     n_states
@@ -43,14 +43,13 @@ def TFScanning_func(
     cutoff
         Threshold for determing which links need to be muted,
     method
-        Method {"likelihood", "t-statistics"} for quantifying perturbation effect.
+        Method for quantifying perturbation effect.
     combined_kernel
         Whether to use a combined kernel (0.8*VelocityKernel + 0.2*ConnectivityKernel)
 
     Returns
     -------
-    dict
-        Dictionary with keys 'TF', 'coefficient', and 'pvalue' summarizing KO effects.
+    Dictionary with keys ``TF``, ``coefficient``, and ``pvalue`` summarizing KO effects.
     """
 
     reg_vae = REGVELOVI.load(model, adata)

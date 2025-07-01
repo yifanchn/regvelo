@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-
 from anndata import AnnData
 from typing import Literal
 
@@ -15,36 +14,38 @@ def markov_density_simulation(
     method: Literal["stepwise", "one-step"] = "stepwise",
     seed: int = 0,
     ) -> int:
-
-    """Simulate transitions on a velocity-derived Markov transition matrix.
+    r"""Simulate transitions on a velocity-derived Markov transition matrix.
 
     Parameters
     ----------
     adata
         Annotated data object.
     T
-        Transition matrix of shape (n_cells, n_cells).
+        Transition matrix of shape ``(n_cells, n_cells)``.
     start_indices
         Indices of starting cells.
     terminal_indices
         Indices of terminal cells.
     terminal_states
-        Labels of terminal states corresponding to cells in `adata.obs["term_states_fwd"]`.
+        Labels of terminal states corresponding to cells in ``adata.obs["term_states_fwd"]``.
     n_steps
         Maximum number of steps per simulation.
     n_simulations
         Number of simulations per starting cell.
     method
-        Simulation method {'stepwise', 'one-step'} to use:
-        - 'stepwise': simulate trajectories step by step.
-        - 'one-step': sample directly from T^n.
+        Simulation method:
+
+        - ``'stepwise'``: simulate trajectories step by step.
+        - ``'one-step'``: sample directly from ``T^n``.
     seed
         Random seed for reproducibility.
 
     Returns
     -------
-    total_simulations
-        Total number of simulations performed.
+    Total number of simulations performed. Also updates ``adata`` with the following fields:
+
+    - ``adata.obs["visits"]``: Number of visits to each terminal cell.
+    - ``adata.obs["visits_dens"]``: Density of visits to each terminal cell, calculated as the proportion of visits relative to the total number of simulations.
     """
     np.random.seed(seed)
     

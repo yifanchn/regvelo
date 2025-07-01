@@ -2,14 +2,13 @@
 import numpy as np
 import pandas as pd
 from anndata import AnnData
-from typing import Union, Sequence
 
 def perturbation_effect(
     adata_perturb: AnnData,
     adata: AnnData,
-    terminal_state: str | Sequence[str],
+    terminal_state: str | list[str],
     ) -> AnnData:
-    """Compute change in fate probabilities towards terminal states after perturbation. Negative values correspond to a decrease in
+    r"""Compute change in fate probabilities towards terminal states after perturbation. Negative values correspond to a decrease in
     probabilities, while positive values indicate an increase.
 
     Parameters
@@ -23,9 +22,9 @@ def perturbation_effect(
 
     Returns
     -------
-    AnnData
-        Annotated data matrix with the following added:
-        - `terminal state perturbation` : Change in fate probabilities towards terminal state after perturbation.
+    Annotated data object with the following fields added:
+
+    - ``adata.obs[f"perturbation effect on {state}"]``: Change in fate probabilities towards terminal state ``state`` after perturbation, where ``state`` is one of the terminal states specified in ``terminal_state``.
     """
 
     if isinstance(terminal_state, str):

@@ -9,23 +9,22 @@ def simulated_visit_diff(
     adata_perturb: AnnData,
     terminal_states: list[str]
     ) -> tuple[list[float], list[float]]:
-    """Compute difference scores and p-values for terminal states between baseline and perturbation simulations.
+    r"""Compute difference scores and p-values for terminal states between baseline and perturbation simulations.
 
     Parameters
     -------
     adata
-        Annotated data object (unperturbed) with `obs["visits"]`.
+        Annotated data object (unperturbed) with ``obs["visits"]``.
     adata_perturb
-        Annotated data object (perturbed) with `obs["visits"]`.
+        Annotated data object (perturbed) with ``obs["visits"]``.
     terminal_states
-        Labels of terminal states corresponding to cells in `adata.obs["term_states_fwd"]`.
+        Labels of terminal states corresponding to cells in ``adata.obs["term_states_fwd"]``.
 
     Returns
     -------
-    dd_score
-        Mean density difference (perturbed - control) for each terminal state.
-    dd_sig
-        P-values from paired t-test for each terminal state.
+    
+    - Mean density difference (perturbed - control) for each terminal state.
+    - P-values from paired t-test for each terminal state.
     """
 
     if "visits" not in adata.obs:
