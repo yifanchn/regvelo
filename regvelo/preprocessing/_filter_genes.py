@@ -7,7 +7,7 @@ def filter_genes(adata: AnnData) -> AnnData:
     r"""Filter genes in an AnnData object to ensure each gene has at least one upstream regulator in the GRN.
 
     The function iteratively refines the skeleton matrix to maintain only genes with regulatory connections. Only used
-    by `soft_constraint=False` RegVelo model.
+    by ``soft_constraint=False`` RegVelo model.
 
     Parameters
     ----------
@@ -15,14 +15,14 @@ def filter_genes(adata: AnnData) -> AnnData:
         Annotated data object containing:
         
         - gene expression data,
-        - a prior regulatory network in `adata.uns["skeleton"]`,
-        - a list of regulators in `adata.uns["regulators"]`.
+        - a prior regulatory network in ``adata.uns["skeleton"]``,
+        - a list of regulators in ``adata.uns["regulators"]``.
 
     Returns
     -------
-    Updates `adata` with the following field:
+    Updates ``adata`` with the following field:
 
-    - `adata.uns["skeleton"]`.
+    - ``adata.uns["skeleton"]`.
     
     Updated :obj:`AnnData` object with filtered genes and a refined skeleton matrix.
     """

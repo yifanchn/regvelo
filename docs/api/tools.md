@@ -13,4 +13,5 @@
    tools.TFScanning_func
    tools.TFscreening
    tools.markov_density_simulation
+   tools.simulated_visit_diff
 ```

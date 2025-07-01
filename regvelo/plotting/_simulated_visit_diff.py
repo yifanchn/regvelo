@@ -41,10 +41,10 @@ def simulated_visit_diff(
 
     Returns
     -------
-    Nothing, just plots the figure. Also updates `adata` with the following fields:
+    Nothing, just plots the figure. Also updates ``adata`` with the following fields:
 
-    - `adata.obs[f"{key}_diff"]`: Absolute difference in visit counts, scaled, and passed through sigmoid function.
-    - `adata.obs[f"{key}_diff_smooth"]`: Smoothed version of the above for plotting.
+    - ``adata.obs[f"{key}_diff"]``: Absolute difference in visit counts, scaled, and passed through sigmoid function.
+    - ``adata.obs[f"{key}_diff_smooth"]``: Smoothed version of the above for plotting.
     """
 
     key = kwargs.get("key", "visits")

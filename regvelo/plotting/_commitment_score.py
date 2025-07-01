@@ -25,9 +25,9 @@ def commitment_score(
     
     Returns
     -------
-    Nothing, just plots the figure. Also updates `adata` with the following fields:
+    Nothing, just plots the figure. Also updates ``adata`` with the following fields:
 
-    - `adata.obs["commitment_score"]`.
+    - ``adata.obs["commitment_score"]``.
     """
 
     if lineage_key not in adata.obsm:

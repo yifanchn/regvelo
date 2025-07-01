@@ -28,11 +28,11 @@ def set_prior_grn(
 
     Returns
     -------
-    Updates `adata` with the following fields:
+    Updates ``adata`` with the following fields:
     
-    - `adata.uns["skeleton"]`: binary adjacency matrix for the GRN.
-    - `adata.uns["network"]`: same as `skeleton`, may be updated later in pipeline.
-    - `adata.uns["regulators"]` and `adata.uns["targets"]`: gene names after alignment.
+    - ``adata.uns["skeleton"]``: binary adjacency matrix for the GRN.
+    - ``adata.uns["network"]``: same as `skeleton`, may be updated later in pipeline.
+    - ``adata.uns["regulators"]`` and ``adata.uns["targets"]``: gene names after alignment.
     """
     # Identify regulators and targets present in adata
     regulator_mask = adata.var_names.isin(gt_net.columns)
