@@ -8,5 +8,5 @@
    :toctree: genapi
 
    metrics.abundance_test
-   metrics.depletion_score
+   metrics.cellfate_perturbation
 ```
