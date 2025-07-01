@@ -15,7 +15,7 @@ def simulated_visit_diff(
     basis: str = None,
     **kwargs: Any
     ) -> None:
-    """Assign and visualize smoothed absolute differences in visit counts between control and perturbation simulations.
+    r"""Assign and visualize smoothed absolute differences in visit counts between control and perturbation simulations.
 
     Parameters
     ----------
@@ -27,13 +27,24 @@ def simulated_visit_diff(
         List of terminal state labels.
     total_simulations
         Total number of simulations performed.
+    basis
+        Optional embedding basis. If given, temporarily overrides UMAP coordinates.
     **kwargs
-        Additional optional settings: key, embedding, title, figsize, n_neighbors, color_map.
+        Optional keyword arguments:
+        
+        - ``key`` : Name of the observation key in :attr:`.obs` containing visit counts (default: ``"visits"``).
+        - ``embedding`` : Key in :attr:`.obsm` for the embedding (default: ``"X_pca"``).
+        - ``title`` : Title for the plot (default: ``"Density difference"``).
+        - ``figsize`` : Size of the output plot (default: ``(4, 3.5)``).
+        - ``n_neighbors`` : Number of neighbors for smoothing (default: ``10``).
+        - ``color_map`` : Colormap used for plotting (default: ``"vlag"``).
 
     Returns
     -------
-    None
-        Displays a smoothed UMAP plot using Scanpy.
+    Nothing, just plots the figure. Also updates `adata` with the following fields:
+
+    - `adata.obs[f"{key}_diff"]`: Absolute difference in visit counts, scaled, and passed through sigmoid function.
+    - `adata.obs[f"{key}_diff_smooth"]`: Smoothed version of the above for plotting.
     """
 
     key = kwargs.get("key", "visits")

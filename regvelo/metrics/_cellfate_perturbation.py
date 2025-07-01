@@ -10,7 +10,7 @@ def cellfate_perturbation(
         terminal_state : str | Sequence[str],
         method : Literal["likelihood", "t-statistics"] = "likelihood"
         ) -> pd.DataFrame:
-    """Compute depletion likelihood or score for TF perturbation.
+    r"""Compute depletion likelihood or score for TF perturbation.
 
     Parameters
     ----------

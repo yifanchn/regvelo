@@ -51,7 +51,7 @@ def plot_tsi(
     cluster_key
         Key in `adata.obs` for cluster annotations.
     max_states
-        Maximum number of macrostates to consider, by default 12.
+        Maximum number of macrostates to consider.
 
     Returns
     -------
@@ -113,7 +113,7 @@ def get_tsi_score(
     kernel
         Computational kernel used to compute macrostates and predict terminal states.
     max_states
-        Maximum number of macrostates to consider, by default 12.
+        Maximum number of macrostates to consider.
 
     Returns
     -------

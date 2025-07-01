@@ -12,7 +12,7 @@ def abundance_test(
     prob_pert : pd.DataFrame, 
     method : Literal["likelihood", "t-statistics"] = "likelihood"
     ) -> pd.DataFrame:
-    """Perform an abundance test comparing cell fate probabilities between 
+    r"""Perform an abundance test comparing cell fate probabilities between 
     raw and perturbed datasets.
 
     Parameters

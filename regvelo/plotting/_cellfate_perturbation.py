@@ -13,23 +13,33 @@ def cellfate_perturbation(
         color_label: str = "celltype_cluster",
         **kwargs: Any,
         ) -> None:
-    """Plot depletion likelihood or score for transcription factors across terminal states.
+    r"""Plot depletion likelihood or score for transcription factors across terminal states.
 
     Parameters
     ----------
     adata
         Annotated data matrix of the unperturbed system, used to extract color palette info.
     df
-        DataFrame containing columns "TF", "Terminal state", and either "Depletion likelihood" or "Depletion score".
+        DataFrame containing perturbation results. Must include columns:
+        
+        - ``"TF"``,
+        - ``"Terminal state"``,
+        - and either ``"Depletion likelihood"`` or ``"Depletion score"``.
     color_label
         Key in `adata.obs` used to extract categorical color palette from `adata.uns`.
     **kwargs 
-        Additional optional settings: fontsize, figsize, legend_loc, legend_bbox, xlabel, ylabel.
+        Additional optional parameters:
+
+        - ``fontsize`` : Font size for axis labels and title (default: ``14``).
+        - ``figsize`` : Size of the plot (default: ``(12, 6)``).
+        - ``legend_loc`` : Location of the legend (default: ``"center left"``).
+        - ``legend_bbox`` : Positioning of the legend bounding box (default: ``(1.02, 0.5)``).
+        - ``xlabel`` : Label for the x-axis (default: ``"TF"``).
+        - ``ylabel`` : Label for the y-axis (default is determined by the score type).
 
     Returns
     -------
-    None
-        Displays a searborn barplot.
+    Nothing, just plots the figure. 
     """
 
     fontsize = kwargs.get("fontsize", 14)

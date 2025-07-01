@@ -8,5 +8,6 @@
    :toctree: genapi
 
    plotting.commitment_score
-   plotting.depletion_score
+   plotting.cellfate_perturbation
+   plotting.simulated_visit_diff
 ```

@@ -50,10 +50,11 @@ def get_significance(pvalue: float) -> str:
     Returns
     -------
     String indicating level of significance:
-        - :attr:"***" for p < 0.001,
-        - :attr:"**" for p < 0.01,
-        - :attr:"*" for p < 0.1,
-        - :attr:"n.s." (not significant) otherwise.
+
+        - "***" for p < 0.001,
+        - "**" for p < 0.01,
+        - "*" for p < 0.1,
+        - "n.s." (not significant) otherwise.
     """
     if pvalue < 0.001:
         return "***"

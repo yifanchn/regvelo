@@ -12,7 +12,7 @@ def commitment_score(
         lineage_key: str = "lineages_fwd",
         **kwargs: Any
         ) -> None:
-    """Compute and plot cell fate commitment scores based on fate probabilities. 
+    r"""Compute and plot cell fate commitment scores based on fate probabilities. 
     
     Parameters
     ----------
@@ -21,12 +21,13 @@ def commitment_score(
     lineage_key
         Key in `adata.obsm` that stores the cell fate probabilities.
     **kwargs
-        Additional keyword arguments passed to `scanpy.pl.umap`.
+        Additional keyword arguments passed to :func:`scanpy.pl.umap`
     
     Returns
     -------
-    None
-        Modifies `adata.obs["commitment_score"]` and plots a UMAP.
+    Nothing, just plots the figure. Also updates `adata` with the following fields:
+
+    - `adata.obs["commitment_score"]`.
     """
 
     if lineage_key not in adata.obsm:
