@@ -19,8 +19,6 @@ from .tools._set_output import set_output
 from .metrics._tsi import get_tsi_score
 
 
-# Packages used for data type validation
-from typing import List, Optional, Union, Dict
 from anndata import AnnData
 
 class ModelComparison:
@@ -36,10 +34,10 @@ class ModelComparison:
         
         """
     def __init__(self,
-                 terminal_states: List = None,
-                 state_transition: Dict = None,
+                 terminal_states: list = None,
+                 state_transition: dict = None,
                  n_states: int = None):
-        """Initialize parameters in comparision object.
+        r"""Initialize parameters in comparision object.
         
         Parameters
         ----------
@@ -76,9 +74,9 @@ class ModelComparison:
     
     def validate_input(self,
                        adata: AnnData,
-                       model_list: List[str] = None,
+                       model_list: list[str] = None,
                        side_information: str = None,
-                       lam2: Union[List[float], float] = None,
+                       lam2: list[float] | float = None,
                        side_key: str = None) -> None:
         
         # 1.Validate adata
@@ -141,12 +139,12 @@ class ModelComparison:
     def train(
         self,
         adata: AnnData,
-        model_list: List[str],
-        lam2: Union[List[float], float] = None,
+        model_list: list[str],
+        lam2: list[float] | float = None,
         n_repeat: int = 1,
         batch_size=None
-    ) -> List:
-        """Train all the possible models given by users, and stored them in a dictionary, where users can reach them easily and deal with them in batch.If there are already model trained and saved before, they won't be removed.
+    ) -> list:
+        r"""Train all the possible models given by users, and stored them in a dictionary, where users can reach them easily and deal with them in batch.If there are already model trained and saved before, they won't be removed.
         
         Parameters
         ----------
@@ -216,7 +214,7 @@ class ModelComparison:
         side_information: str,
         side_key:str = None
         ) -> pd.DataFrame:
-        """Evaluate all of trained model under one specific side_information mode, For example, if user know the exact time or stage of cells, user can choose 'Real_Time' as reference; If users has used Pseudotime calculator such as CellRank beforehand, they can also choose 'Pseudo_Time' as reference.
+        r"""Evaluate all of trained model under one specific side_information mode, For example, if user know the exact time or stage of cells, user can choose 'Real_Time' as reference; If users has used Pseudotime calculator such as CellRank beforehand, they can also choose 'Pseudo_Time' as reference.
         
         Parameters
         ----------
@@ -286,7 +284,7 @@ class ModelComparison:
         figsize = (6, None),
         palette = 'lightpink'
     ):
-        """Visualize comparision result by barplot with scatters. The significant mark will only show with n_repeats more than 3, and p < 0.05.
+        r"""Visualize comparision result by barplot with scatters. The significant mark will only show with n_repeats more than 3, and p < 0.05.
         
         Paramters
         ----------
@@ -299,7 +297,7 @@ class ModelComparison:
         
         Returns
         ----------
-        A barplot with scatters, represent performance of all models.
+        Nothing, just plots the figure.
         """
         df_name = f"df_{side_information}"
         data = getattr(self, df_name)

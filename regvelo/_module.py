@@ -17,7 +17,7 @@ import torch.nn.utils.prune as prune
 torch.backends.cudnn.benchmark = True
 
 def _softplus_inverse(x: np.ndarray) -> np.ndarray:
-    """Computes the inverse of the softplus function element-wise.
+    r"""Computes the inverse of the softplus function element-wise.
 
     Uses a stable approximation for large values to avoid numerical issues.
 
@@ -28,15 +28,14 @@ def _softplus_inverse(x: np.ndarray) -> np.ndarray:
 
     Returns
     -------
-    np.ndarray
-        Inverse softplus applied to each element in the input array.
+    Inverse softplus applied to each element in the input array.
     """
     x = torch.from_numpy(x)
     x_inv = torch.where(x > 20, x, x.expm1().log()).numpy()
     return x_inv
 
 class ThresholdPruning(prune.BasePruningMethod):
-    """Custom pruning method that zeroes out tensor values below a given threshold.
+    r"""Custom pruning method that zeroes out tensor values below a given threshold.
 
     This class implements unstructured pruning, removing small-magnitude weights.
 
@@ -53,7 +52,7 @@ class ThresholdPruning(prune.BasePruningMethod):
         return torch.abs(tensor) > self.threshold
     
 class DecoderVELOVI(nn.Module):
-    """Decoder module mapping latent variables to expression-space parameters
+    r"""Decoder module mapping latent variables to expression-space parameters
 
     Uses a fully connected neural network.
 
@@ -121,7 +120,7 @@ class DecoderVELOVI(nn.Module):
             z: torch.Tensor, 
             latent_dim: int = None
             ) -> torch.Tensor:
-        """Forward pass of the decoder.
+        r"""Forward pass of the decoder.
 
         Parameters
         ----------
@@ -132,8 +131,7 @@ class DecoderVELOVI(nn.Module):
 
         Returns
         -------
-        torch.Tensor
-            Decoded expression parameter.
+        Decoded expression parameter.
         """
         z_in = z
         if latent_dim is not None:
@@ -152,7 +150,7 @@ class DecoderVELOVI(nn.Module):
 
 ## define a new class velocity encoder
 class velocity_encoder(nn.Module):
-    """Encode the velocity
+    r"""Encode the velocity
 
     Time-dependent transcription rate is determined by upstream regulators;
     velocity can be built on top of this encoder.
@@ -189,7 +187,7 @@ class velocity_encoder(nn.Module):
 
     ## TODO: regularizing the jacobian
     def GRN_Jacobian(self, s: torch.Tensor) -> torch.Tensor:
-        """Calculate the Jacobian of the GRN with respect to the input s.
+        r"""Calculate the Jacobian of the GRN with respect to the input s.
         
         Parameters
         ----------
@@ -198,8 +196,7 @@ class velocity_encoder(nn.Module):
         
         Returns
         -------
-        torch.Tensor
-            A Jacobian-like matrix capturing sensitivity of the transcription rate to each input gene.
+        A Jacobian-like matrix capturing sensitivity of the transcription rate to each input gene.
         """
         
         if self.activate is not "OR":
@@ -225,7 +222,7 @@ class velocity_encoder(nn.Module):
         return Jaco_m
     
     def GRN_Jacobian2(self, s: torch.Tensor) -> torch.Tensor:
-        """Computes the per-sample Jacobian-like matrices for the transcription rate 
+        r"""Computes the per-sample Jacobian-like matrices for the transcription rate 
         with respect to input `s`, for all samples in the batch.
     
         Parameters
@@ -235,8 +232,7 @@ class velocity_encoder(nn.Module):
 
         Returns
         -------
-        torch.Tensor
-            Jacobian-like tensor of shape (batch_size, n_genes, n_genes).
+        Jacobian-like tensor of shape ``(batch_size, n_genes, n_genes)``.
         """
 
         if self.base_alpha is not True:
@@ -259,7 +255,7 @@ class velocity_encoder(nn.Module):
         return Jaco
     
     def transcription_rate(self, s: torch.Tensor) -> torch.Tensor:
-        """Compute transcription rate.
+        r"""Compute transcription rate.
 
         Parameters
         ----------
@@ -268,8 +264,7 @@ class velocity_encoder(nn.Module):
 
         Returns
         -------
-        torch.Tensor
-            Transcription rate tensor of shape (batch_size, n_int).
+        Transcription rate tensor of shape ``(batch_size, n_int)``.
         """
         if self.activate is not "OR":
             if self.base_alpha is not True:
@@ -297,7 +292,7 @@ class velocity_encoder(nn.Module):
             u: torch.Tensor, 
             s: torch.Tensor
             ) -> tuple[torch.Tensor, torch.Tensor]:
-        """Computes the time derivatives du/dt and ds/dt based on the RNA velocity model.
+        r"""Computes the time derivatives du/dt and ds/dt based on the RNA velocity model.
 
         Parameters
         ----------
@@ -310,8 +305,7 @@ class velocity_encoder(nn.Module):
         
         Returns
         -------
-        tuple[torch.Tensor, torch.Tensor]
-            du/dt and ds/dt tensors, representing the time derivatives of unspliced and spliced readouts.
+        du/dt and ds/dt tensors, representing the time derivatives of unspliced and spliced readouts.
         """
         ## split x into unspliced and spliced readout
         ## x is a matrix with (G*2), in which row is a subgraph (batch)
@@ -340,14 +334,13 @@ class velocity_encoder(nn.Module):
         return du,ds
 
 class v_encoder_batch(nn.Module):
-    """Batch wrapper for velocity encoder.
+    r"""Batch wrapper for velocity encoder.
 
     This class reshapes the input data to allow the velocity encoder to process.
 
     Parameters
     ----------
-    num_g
-        Number of genes (used to reshape velocity inputs and outputs).
+    Number of genes (used to reshape velocity inputs and outputs).
     """
     
     def __init__(self, num_g: int = 5):
@@ -355,7 +348,7 @@ class v_encoder_batch(nn.Module):
         self.num_g = num_g
 
     def forward(self, t, y: torch.Tensor) -> torch.Tensor:
-        """Forward pass for the batch velocity encoder.
+        r"""Forward pass for the batch velocity encoder.
 
         Parameters
         ----------
@@ -367,8 +360,7 @@ class v_encoder_batch(nn.Module):
 
         Returns
         -------
-        torch.Tensor
-            Tensor of shape (batch_size, 2), where each row is [du, ds].
+        Tensor of shape ``(batch_size, 2)``, where each row is [du, ds].
         """
         u_v = y[:,0]
         s_v = y[:,1]
@@ -386,7 +378,7 @@ class v_encoder_batch(nn.Module):
 
 # VAE model
 class VELOVAE(BaseModuleClass):
-    """Variational Autoencoder for RNA velocity modeling with regulatory dynamics.
+    r"""Variational Autoencoder for RNA velocity modeling with regulatory dynamics.
 
     This class integrates regulatory priors and velocity-informed decoding
     into a VAE framework. It models gene expression through a latent space
@@ -430,8 +422,9 @@ class VELOVAE(BaseModuleClass):
         Whether to apply log(1 + x) transformation to inputs for numerical stability.
     latent_distribution
         Latent distribution to use. Options are:
-        * `'normal'` - standard Gaussian
-        * `'ln'` - logistic normal
+
+        - ``'normal'``: standard Gaussian
+        - ``'ln'``: logistic normal
     use_batch_norm
         Where to apply batch normalization.
     use_layer_norm
@@ -630,7 +623,7 @@ class VELOVAE(BaseModuleClass):
         self.register_buffer("target_m",torch.zeros(self.v_encoder.fc1.weight.data.shape))
 
     def _get_inference_input(self, tensors: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
-        """Extracts input tensors for the inference step.
+        r"""Extracts input tensors for the inference step.
 
         Parameters
         ----------
@@ -639,8 +632,7 @@ class VELOVAE(BaseModuleClass):
 
         Returns
         -------
-        dict
-            Dictionary with 'spliced' and 'unspliced' tensors.
+        Dictionary with 'spliced' and 'unspliced' tensors.
         """
         spliced = tensors[REGISTRY_KEYS.X_KEY]
         unspliced = tensors[REGISTRY_KEYS.U_KEY]
@@ -652,7 +644,7 @@ class VELOVAE(BaseModuleClass):
         return input_dict
 
     def _get_generative_input(self, tensors: dict, inference_outputs: dict) -> dict[str, torch.Tensor]:
-        """Prepares input for the generative model using encoder outputs.
+        r"""Prepares input for the generative model using encoder outputs.
 
         Parameters
         ----------
@@ -663,8 +655,7 @@ class VELOVAE(BaseModuleClass):
 
         Returns
         -------
-        dict
-            Inputs required for the generative model.
+        Inputs required for the generative model.
         """
         z = inference_outputs["z"]
         gamma = inference_outputs["gamma"]
@@ -686,7 +677,7 @@ class VELOVAE(BaseModuleClass):
         unspliced: torch.Tensor,
         n_samples: int = 1,
         ) -> dict[str, torch.Tensor]:
-        """Runs the encoder (inference) model.
+        r"""Runs the encoder (inference) model.
 
         Parameters
         ----------
@@ -699,8 +690,7 @@ class VELOVAE(BaseModuleClass):
 
         Returns
         -------
-        dict
-            Dictionary containing the latent variables and parameters from the encoder.
+        Dictionary containing the latent variables and parameters from the encoder.
         """
         spliced_ = spliced
         unspliced_ = unspliced
@@ -734,12 +724,11 @@ class VELOVAE(BaseModuleClass):
         return outputs
 
     def _get_rates(self) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Retrieves kinetic parameters from the velocity encoder module.
+        r"""Retrieves kinetic parameters from the velocity encoder module.
 
         Returns
         -------
-        tuple of torch.Tensor
-            (gamma, beta, alpha_1) parameter vectors for target genes.
+        (``gamma``, ``beta``, ``alpha_1``) parameter vectors for target genes.
         """
         # globals
         # degradation for each target gene
@@ -760,7 +749,7 @@ class VELOVAE(BaseModuleClass):
         alpha_1: torch.Tensor, 
         latent_dim: int = None
         ) -> dict[str, torch.Tensor]:
-        """Runs the decoder (generative) model.
+        r"""Runs the decoder (generative) model.
         
         Parameters
         ----------
@@ -777,8 +766,7 @@ class VELOVAE(BaseModuleClass):
         
         Returns
         -------
-        dict
-            Dictionary containing the decoded parameters and distributions.
+        Dictionary containing the decoded parameters and distributions.
         """
         decoder_input = z
 
@@ -811,7 +799,7 @@ class VELOVAE(BaseModuleClass):
             tensor2: torch.Tensor, 
             eps: float = 1e-6
             ) -> torch.Tensor:
-        """Computes negative Pearson correlation loss between two tensors.
+        r"""Computes negative Pearson correlation loss between two tensors.
         
         Parameters
         ----------
@@ -824,8 +812,7 @@ class VELOVAE(BaseModuleClass):
 
         Returns
         -------
-        torch.Tensor
-            Negative Pearson correlation loss.
+        Negative Pearson correlation loss.
         """
         # Calculate means
         mean1 = torch.mean(tensor1, dim=0)
@@ -857,7 +844,7 @@ class VELOVAE(BaseModuleClass):
         kl_weight: float = 1.0,
         n_obs: float = 1.0,
         ) -> LossOutput:
-        """Computes total loss
+        r"""Computes total loss
         
         Parameters
         ----------
@@ -874,8 +861,7 @@ class VELOVAE(BaseModuleClass):
 
         Returns
         -------
-        LossOutput
-            Object containing total loss and individual components.
+        Object containing total loss and individual components.
         """
         spliced = tensors[REGISTRY_KEYS.X_KEY]
         unspliced = tensors[REGISTRY_KEYS.U_KEY]
@@ -959,7 +945,7 @@ class VELOVAE(BaseModuleClass):
         beta: torch.Tensor,
         alpha_1: torch.Tensor,
         ) -> tuple[torch.distributions.Normal, torch.distributions.Normal, torch.Tensor, torch.Tensor]:
-        """Generates distributions for spliced and unspliced counts during induction.
+        r"""Generates distributions for spliced and unspliced counts during induction.
 
         Parameters
         ----------
@@ -976,12 +962,11 @@ class VELOVAE(BaseModuleClass):
 
         Returns
         -------
-        tuple
-            Tuple containing:
-            - dist_s: Normal distribution for spliced counts.
-            - dist_u: Normal distribution for unspliced counts.
-            - index: Sorting indices for integration.
-            - ind_t: Induction time for target genes.
+        
+        - Normal distribution for spliced counts.
+        - Normal distribution for unspliced counts.
+        - Sorting indices for integration.
+        - Induction time for target genes.
         
         """
 
@@ -1006,7 +991,7 @@ class VELOVAE(BaseModuleClass):
             t: torch.Tensor, 
             root: int = None
             ) -> torch.Tensor:
-        """Adjusts time tensor `t` to have a root time of 0.
+        r"""Adjusts time tensor `t` to have a root time of 0.
         
         Parameters
         ----------
@@ -1017,8 +1002,7 @@ class VELOVAE(BaseModuleClass):
 
         Returns
         -------
-        torch.Tensor
-            Latent time rooted to the specified reference.
+        Latent time rooted to the specified reference.
         """
 
         t_root = 0 if root is None else t[root]
@@ -1036,7 +1020,7 @@ class VELOVAE(BaseModuleClass):
         t: torch.Tensor, 
         eps: float = 1e-6
         ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Integrates the RNA velocity ODE to predict unspliced/spliced readouts at time `t`.
+        r"""Integrates the RNA velocity ODE to predict unspliced/spliced readouts at time `t`.
 
         Parameters
         ----------
@@ -1047,11 +1031,10 @@ class VELOVAE(BaseModuleClass):
 
         Returns
         -------
-        tuple
-            Tuple containing:
-            - unspliced: Predicted unspliced readouts.
-            - spliced: Predicted spliced readouts.
-            - index: Sorting indices for the time tensor.
+        
+        - Predicted unspliced readouts.
+        - Predicted spliced readouts.
+        - Sorting indices for the time tensor.
         """
         device = self.device
         #t = t.T    
@@ -1116,7 +1099,7 @@ class VELOVAE(BaseModuleClass):
             t: torch.Tensor, 
             eps: float = 1e-6
             ) -> tuple[torch.Tensor, torch.Tensor]:
-        """Closed-form solution for repression-phase unspliced/spliced RNA dynamics.
+        r"""Closed-form solution for repression-phase unspliced/spliced RNA dynamics.
 
         Parameters
         ----------
@@ -1135,8 +1118,7 @@ class VELOVAE(BaseModuleClass):
 
         Returns
         -------
-        tuple
-            (unspliced, spliced) predicted values at time `t`.
+        (unspliced, spliced) predicted values at time ``t``.
         """
         unspliced = torch.exp(-beta * t) * u_0
         spliced = s_0 * torch.exp(-gamma * t) - (
@@ -1152,12 +1134,11 @@ class VELOVAE(BaseModuleClass):
 
     @torch.no_grad()
     def get_loadings(self) -> np.ndarray:
-        """Extract per-gene weights (for each Z, shape is genes by dim(Z)) from the linear decoder.
+        r"""Extract per-gene weights (for each Z, shape is genes by dim(Z)) from the linear decoder.
         
         Returns
         -------
-        np.ndarray
-            Weight matrix.
+        Weight matrix.
         """
         # This is BW, where B is diag(b) batch norm, W is weight matrix
         if self.decoder.linear_decoder is False:
