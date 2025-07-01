@@ -1,7 +1,6 @@
 import numpy as np
-from typing import Sequence, Union
 
-def p_adjust_bh(p : Union[Sequence[float], np.ndarray]) -> np.ndarray:
+def p_adjust_bh(p : list[float] | np.ndarray) -> np.ndarray:
     """Perform Benjamini-Hochberg p-value correction for multiple hypothesis testing.
 
     Parameters
@@ -11,8 +10,7 @@ def p_adjust_bh(p : Union[Sequence[float], np.ndarray]) -> np.ndarray:
 
     Returns
     -------
-    np.ndarray
-        Adjusted p-values using the Benjamini-Hochberg method.
+    Adjusted p-values using the Benjamini-Hochberg method.
     """
     p = np.asfarray(p)
     by_descend = p.argsort()[::-1]
@@ -27,13 +25,12 @@ def calculate_entropy(prob_matrix : np.ndarray) -> np.ndarray:
     Parameters
     ----------
     prob_matrix
-        A 2D NumPy array of shape (n_cells, n_lineages) where each row represents
+        2D array of shape (n_cells, n_lineages) where each row represents
         a cell's fate probabilities across different lineages. Each row is expected to sum to 1.
 
     Returns
     -------
-    np.ndarray
-        A 1D NumPy array of shape (n_cells,) containing the entropy values for each cell.
+    1D NumPy array of shape (n_cells,) containing the entropy values for each cell.
     """
     log_probs = np.zeros_like(prob_matrix)
     mask = prob_matrix != 0
@@ -52,12 +49,11 @@ def get_significance(pvalue: float) -> str:
 
     Returns
     -------
-    str
-        A string indicating the level of significance:
-        "***" for p < 0.001,
-        "**" for p < 0.01,
-        "*" for p < 0.1,
-        "n.s." (not significant) otherwise.
+    String indicating level of significance:
+        - :attr:"***" for p < 0.001,
+        - :attr:"**" for p < 0.01,
+        - :attr:"*" for p < 0.1,
+        - :attr:"n.s." (not significant) otherwise.
     """
     if pvalue < 0.001:
         return "***"

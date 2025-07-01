@@ -11,10 +11,10 @@ def markov_density_simulation(
     terminal_indices: list[int], 
     terminal_states: list[str],
     n_steps: int = 100, 
-    n_simulations: int = 200, 
+    n_simulations: int = 1000, 
     method: Literal["stepwise", "one-step"] = "stepwise",
     seed: int = 0,
-    ) -> tuple[pd.Series, pd.Series]:
+    ) -> int:
 
     """Simulate transitions on a velocity-derived Markov transition matrix.
 
@@ -43,9 +43,8 @@ def markov_density_simulation(
 
     Returns
     -------
-    tuple
-        - pd.Series containing number of simulations that ended in each terminal cell.
-        - pd.Series containing proportion of simulations that ended in each terminal cell.
+    total_simulations
+        Total number of simulations performed.
     """
     np.random.seed(seed)
     
@@ -94,8 +93,11 @@ def markov_density_simulation(
     visits = pd.Series({tid: arrivals_array[tid] for tid in terminal_indices}, dtype=int)
     visits_dens = pd.Series({tid: arrivals_array[tid] / total_simulations for tid in terminal_indices})
 
-    adata.obs[f"visits_{method}"] = np.nan
-    adata.obs[f"visits_{method}"].iloc[terminal_indices] = visits_dens
+    adata.obs["visits"] = np.nan
+    adata.obs["visits"].iloc[terminal_indices] = visits
+
+    adata.obs["visits_dens"] = np.nan
+    adata.obs["visits_dens"].iloc[terminal_indices] = visits_dens
 
     dens_cum = []
     for ts in terminal_states:
@@ -103,6 +105,6 @@ def markov_density_simulation(
         density = visits_dens.loc[ts_cells].sum()
         dens_cum.append(density)
     
-    print("Proportion of simulations reaching a terminal cell", sum(dens_cum))
+    #print("Proportion of simulations reaching a terminal cell", sum(dens_cum))
 
-    return visits, visits_dens
+    return total_simulations

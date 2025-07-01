@@ -3,6 +3,7 @@ import pandas as pd
 from scipy.stats import ranksums, ttest_ind
 from sklearn.metrics import roc_auc_score
 from typing import Literal
+
 from ._utils import p_adjust_bh
 
 
@@ -21,15 +22,16 @@ def abundance_test(
     prob_pert
         DataFrame containing fate probabilities from the perturbed data.
     method
-        Scoring method to use:
-        - "t-statistics": Uses t-statistics.
-        - "likelihood": Uses ROC AUC.
+        Scoring method to use: 
+        - :obj:"t-statistics" (uses t-statistics) 
+        - :obj:"likelihood" (uses ROC AUC)
 
     Returns
     -------
-    pd.DataFrame
-        DataFrame containing: `coefficient`: test statistic or ROC AUC score, `p-value`: unadjusted p-value, and
-        `FDR adjusted p-value`: Benjamini-Hochberg corrected p-value.
+    DataFrame containing: 
+    - :attr:"coefficient" (test statistic or ROC AUC score) 
+    - :attr:"p-value" (unadjusted p-value)
+    - :attr:"FDR adjusted p-value" (Benjamini-Hochberg corrected p-value)
     """
     y = [1] * prob_raw.shape[0] + [0] * prob_pert.shape[0]
     X = pd.concat([prob_raw, prob_pert], axis=0)
@@ -40,7 +42,7 @@ def abundance_test(
         if np.sum(pred) == 0:
             score, pval = np.nan, np.nan
         else:
-            pval = ranksums(pred[np.array(y) == 0], pred[np.array(y) == 1])[1]
+            pval = ranksums(pred[np.array(y) == 0], pred[np.array(y) == 1], alternative = "less")[1]
             if method == "t-statistics":
                 score = ttest_ind(pred[np.array(y) == 0], pred[np.array(y) == 1])[0]
             elif method == "likelihood":

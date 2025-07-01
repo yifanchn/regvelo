@@ -16,9 +16,7 @@ def filter_genes(adata: AnnData) -> AnnData:
 
     Returns
     -------
-    adata
-        Updated AnnData object with filtered genes and a refined skeleton matrix where all genes have at least one
-        upstream regulator.
+    Updated :obj:`AnnData` object with filtered genes and a refined skeleton matrix.
     """
     # Initial filtering based on regulators
     var_mask = adata.var_names.isin(adata.uns["regulators"])
