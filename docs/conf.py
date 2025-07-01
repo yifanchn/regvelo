@@ -71,16 +71,21 @@ extensions = [
     "sphinx_autodoc_typehints",
 ]
 
+# autodoc + napoleon
 autosummary_generate = True
-autodoc_member_order = "bysource"
-default_role = "literal"
+autodoc_member_order = "alphabetical"
 autodoc_typehints = "description"
-bibtex_reference_style = "author_year"
+autodoc_mock_imports = ["moscot"]
 napoleon_google_docstring = False
 napoleon_numpy_docstring = True
-napoleon_include_init_with_doc = False
-napoleon_use_rtype = False  # having a separate entry generally helps readability
-napoleon_use_param = False
+
+#default_role = "literal"
+
+
+bibtex_reference_style = "author_year"
+#napoleon_include_init_with_doc = False
+#napoleon_use_rtype = False  # having a separate entry generally helps readability
+#napoleon_use_param = False
 myst_enable_extensions = [
     "amsmath",
     "colon_fence",
