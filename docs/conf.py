@@ -75,11 +75,11 @@ autodoc_member_order = "bysource"
 default_role = "literal"
 autodoc_typehints = "description"
 bibtex_reference_style = "author_year"
-napoleon_google_docstring = True
+napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = False
-napoleon_use_rtype = True  # having a separate entry generally helps readability
-napoleon_use_param = True
+napoleon_use_rtype = False  # having a separate entry generally helps readability
+napoleon_use_param = False
 myst_enable_extensions = [
     "amsmath",
     "colon_fence",
