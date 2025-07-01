@@ -22,9 +22,7 @@ def filter_genes(adata: AnnData) -> AnnData:
     -------
     Updates ``adata`` with the following field:
 
-    - ``adata.uns["skeleton"]`.
-    
-    Updated :obj:`AnnData` object with filtered genes and a refined skeleton matrix.
+    - ``adata.uns["skeleton"]``.
     """
     # Initial filtering based on regulators
     var_mask = adata.var_names.isin(adata.uns["regulators"])
