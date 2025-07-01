@@ -15,7 +15,7 @@ url_adata_humanlimb = "https://drive.usercontent.google.com/download?id=17ZaqWx9
 
 
 def zebrafish_nc(file_path: str | Path = "data/zebrafish_nc/adata_zebrafish_preprocessed.h5ad") -> AnnData:
-    """Load zebrafish neural crest (NC) single-cell RNA-seq dataset.
+    r"""Load zebrafish neural crest (NC) single-cell RNA-seq dataset.
 
     This dataset contains Smart-seq3 data across seven time points during NC development,
     including four distinct phases:
@@ -24,7 +24,7 @@ def zebrafish_nc(file_path: str | Path = "data/zebrafish_nc/adata_zebrafish_prep
     3. Peripheral migration, and
     4. Differentiation into distinct cell types.
 
-    Parameters:
+    Parameters
     ---------
     file_path
         Path to local dataset. Will download from remote URL if not found.
