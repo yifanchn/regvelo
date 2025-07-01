@@ -6,7 +6,6 @@ import cellrank as cr
 from anndata import AnnData
 from scvelo import logging as logg
 import os, shutil
-from typing import Dict, Optional, Sequence, Tuple, Union
 
 from .._model import REGVELOVI
 from ._utils import split_elements, get_list_name
@@ -29,7 +28,7 @@ def TFscreening(
     method : str = "likelihood",
     dir : str | None = None,
     ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Perform repeated in silico TF regulon knock-out screening.
+    r"""Perform repeated in silico TF regulon knock-out screening.
 
     Parameters
     ----------
@@ -57,17 +56,17 @@ def TFscreening(
         Threshold to zero out TF-target links during knock-out.
     max_nruns
         Maximum number of runs, soft constrainted RegVelo model need to have repeat runs to get stable perturbation results.
-        Set to 1 if `soft_constraint=False`.
+        Set to 1 if ``soft_constraint=False``.
     method
-        Use either `likelihood` or `t-statistics` to quantify perturbation effects
+        Method to quantify perturbation effects
     dir
         Directory to store intermediate model files and results.
 
     Returns
     -------
-    tuple
-        - `coef` : DataFrame containing the coefficients of the perturbation effects.
-        - `pval` : DataFrame containing the p-values of the perturbation effects.
+    
+    - DataFrame containing the coefficients of the perturbation effects.
+    - DataFrame containing the p-values of the perturbation effects.
     """
 
     if soft_constraint is not True:

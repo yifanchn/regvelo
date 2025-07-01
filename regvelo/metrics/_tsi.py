@@ -1,4 +1,4 @@
-from typing import Any, List, Set
+from typing import Any, Set
 from anndata import AnnData 
 
 
@@ -14,8 +14,7 @@ def generate_sequence(k: int, n: int) -> list[int]:
 
     Returns
     -------
-    list
-        A list of integers from 1 to k, padded with k to length n if necessary.
+    List of integers from 1 to k, padded with k to length n if necessary.
     """
     sequence = list(range(1, k + 1))
 
@@ -52,12 +51,11 @@ def plot_tsi(
     cluster_key
         Key in `adata.obs` for cluster annotations.
     max_states
-        Maximum number of macrostates to consider, by default 12.
+        Maximum number of macrostates to consider.
 
     Returns
     -------
-    list
-        Number of recovered terminal states for each macrostate count.
+    List of recovered terminal states for each macrostate count.
     """
     # Create a mapping of state identifiers to their corresponding types
     all_states = list(set(adata.obs[cluster_key].tolist()))
@@ -115,13 +113,12 @@ def get_tsi_score(
     kernel
         Computational kernel used to compute macrostates and predict terminal states.
     max_states
-        Maximum number of macrostates to consider, by default 12.
+        Maximum number of macrostates to consider.
 
     Returns
     -------
-    list
-        A list of TSI scores, one for each threshold in `points`. Each score represents
-        the normalized area under the staircase function compared to the goal sequence.
+    List of TSI scores, one for each threshold in `points`. 
+    Each score represents the normalized area under the staircase function compared to the goal sequence.
     """
     # Define the goal sequence and calculate its area
     x_values = range(max_states)

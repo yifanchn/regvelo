@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-
 from anndata import AnnData
 from typing import Literal
 
@@ -11,41 +10,42 @@ def markov_density_simulation(
     terminal_indices: list[int], 
     terminal_states: list[str],
     n_steps: int = 100, 
-    n_simulations: int = 200, 
+    n_simulations: int = 1000, 
     method: Literal["stepwise", "one-step"] = "stepwise",
     seed: int = 0,
-    ) -> tuple[pd.Series, pd.Series]:
-
-    """Simulate transitions on a velocity-derived Markov transition matrix.
+    ) -> int:
+    r"""Simulate transitions on a velocity-derived Markov transition matrix.
 
     Parameters
     ----------
     adata
         Annotated data object.
     T
-        Transition matrix of shape (n_cells, n_cells).
+        Transition matrix of shape ``(n_cells, n_cells)``.
     start_indices
         Indices of starting cells.
     terminal_indices
         Indices of terminal cells.
     terminal_states
-        Labels of terminal states corresponding to cells in `adata.obs["term_states_fwd"]`.
+        Labels of terminal states corresponding to cells in ``adata.obs["term_states_fwd"]``.
     n_steps
         Maximum number of steps per simulation.
     n_simulations
         Number of simulations per starting cell.
     method
-        Simulation method {'stepwise', 'one-step'} to use:
-        - 'stepwise': simulate trajectories step by step.
-        - 'one-step': sample directly from T^n.
+        Simulation method:
+
+        - ``'stepwise'``: simulate trajectories step by step.
+        - ``'one-step'``: sample directly from ``T^n``.
     seed
         Random seed for reproducibility.
 
     Returns
     -------
-    tuple
-        - pd.Series containing number of simulations that ended in each terminal cell.
-        - pd.Series containing proportion of simulations that ended in each terminal cell.
+    Total number of simulations performed. Also updates ``adata`` with the following fields:
+
+    - ``adata.obs["visits"]``: Number of visits to each terminal cell.
+    - ``adata.obs["visits_dens"]``: Density of visits to each terminal cell, calculated as the proportion of visits relative to the total number of simulations.
     """
     np.random.seed(seed)
     
@@ -94,8 +94,11 @@ def markov_density_simulation(
     visits = pd.Series({tid: arrivals_array[tid] for tid in terminal_indices}, dtype=int)
     visits_dens = pd.Series({tid: arrivals_array[tid] / total_simulations for tid in terminal_indices})
 
-    adata.obs[f"visits_{method}"] = np.nan
-    adata.obs[f"visits_{method}"].iloc[terminal_indices] = visits_dens
+    adata.obs["visits"] = np.nan
+    adata.obs["visits"].iloc[terminal_indices] = visits
+
+    adata.obs["visits_dens"] = np.nan
+    adata.obs["visits_dens"].iloc[terminal_indices] = visits_dens
 
     dens_cum = []
     for ts in terminal_states:
@@ -103,6 +106,6 @@ def markov_density_simulation(
         density = visits_dens.loc[ts_cells].sum()
         dens_cum.append(density)
     
-    print("Proportion of simulations reaching a terminal cell", sum(dens_cum))
+    #print("Proportion of simulations reaching a terminal cell", sum(dens_cum))
 
-    return visits, visits_dens
+    return total_simulations

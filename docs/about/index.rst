@@ -1,5 +1,5 @@
 About RegVelo
-------------
+-------------
 
 Understanding cellular dynamics and regulatory interactions is crucial for decoding the complex processes that govern cell fate and differentiation. 
 Traditional RNA velocity methods capture dynamic cellular transitions by modeling changes in spliced and unspliced mRNA but lack integration with gene regulatory networks (GRNs), omitting critical regulatory mechanisms underlying cellular decisions. 
@@ -13,7 +13,7 @@ CellRank employs velocity-based state transition probabilities to predict termin
 enabling precise simulations of transcription factor (TF) knockouts. This synergy allows for the identification of lineage drivers and the prediction of cell fate changes upon genetic perturbations.
 
 RegVelo's application
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 - estimate RNA velocity govarned by gene regulation.
 - infer latent time to indicating cellular differentiation process.
 - estimate velocity intrinsic and extrinsic uncertainty :cite:p:`gayoso2024deep`.
@@ -49,7 +49,7 @@ Overall, RegVelo allows sampling predicted readouts and velocities from the lear
 
 
 Perturbation prediction
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. image:: https://github.com/theislab/regvelo/blob/main/docs/_static/img/perturbation_overview_fig.png?raw=true
    :alt: RegVelo perturbation introduction
