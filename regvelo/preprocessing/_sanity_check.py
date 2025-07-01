@@ -10,18 +10,16 @@ from anndata import AnnData
 
 
 def sanity_check(adata : AnnData) -> AnnData:
-    
-    """Ensure that all genes in the AnnData object have a least one regulator.
+    r"""Ensure that all genes in the AnnData object have a least one regulator.
 
     Parameters
     ----------
     adata
-        Annotated data matrix.
+        Annotated data object.
 
     Returns
     -------
-    AnnData
-        Updated AnnData object with refined regulatory network and gene names.
+    Updated AnnData object with filtered genes and refined regulatory matrices.
     """
     
     gene_name = adata.var.index.tolist()

@@ -1,6 +1,4 @@
 # the folloing code is adapted from velovi
-from typing import Optional
-
 import numpy as np
 import pandas as pd
 import scvelo as scv
@@ -15,7 +13,7 @@ def preprocess_data(
     min_max_scale: bool = True,
     filter_on_r2: bool = True,
 ) -> AnnData:
-    """Preprocess an AnnData object.
+    r"""Preprocess an AnnData object.
 
     This function optionally applies min-max scaling to the spliced and unspliced layers,
     and filters genes based on the velocity regression results (velocity_r2 and gamma).
@@ -23,7 +21,7 @@ def preprocess_data(
     Parameters
     ----------
     adata
-        Annotated data matrix.
+        Annotated data object.
     spliced_layer
         Name of the spliced layer.
     unspliced_layer
@@ -35,8 +33,7 @@ def preprocess_data(
 
     Returns
     -------
-    AnnData
-        Preprocessed AnnData object.
+    Preprocessed annotated data object.
     """
     if min_max_scale:
         scaler = MinMaxScaler()

@@ -1,14 +1,10 @@
 
 from pathlib import Path
-from typing import Optional, Union
 from urllib.request import urlretrieve
 
-import torch
 import numpy as np
 import pandas as pd
-
 from anndata import AnnData
-
 from scipy.spatial.distance import cdist
 
 def set_prior_grn(
@@ -16,9 +12,9 @@ def set_prior_grn(
         gt_net: pd.DataFrame, 
         keep_dim: bool = False
         ) -> AnnData:
-    """Add a prior gene regulatory network (GRN) to an AnnData object.
+    r"""Add a prior gene regulatory network (GRN) to an AnnData object.
 
-    This function aligns a provided gene regulatory network (gt_net) with the gene expression data in the AnnData object (adata).
+    This function aligns a provided gene regulatory network (gt_net) with the gene expression data in the AnnData object.
 
     Parameters
     ----------
@@ -28,11 +24,15 @@ def set_prior_grn(
         Prior GRN (rows = targets, columns = regulators).
     keep_dim
         If True, output AnnData retains its original dimensions. Default is False.
+        If False, prune genes without incoming or outgoing regulatory edges.
 
     Returns
     -------
-    AnnData
-        Updated AnnData object with GRN in `.uns["skeleton"]` and `.uns["network"].
+    Updates `adata` with the following fields:
+    
+    - `adata.uns["skeleton"]`: binary adjacency matrix for the GRN.
+    - `adata.uns["network"]`: same as `skeleton`, may be updated later in pipeline.
+    - `adata.uns["regulators"]` and `adata.uns["targets"]`: gene names after alignment.
     """
     # Identify regulators and targets present in adata
     regulator_mask = adata.var_names.isin(gt_net.columns)
