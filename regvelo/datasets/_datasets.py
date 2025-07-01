@@ -53,14 +53,8 @@ def zebrafish_grn(file_path: str | Path = "data/zebrafish_nc/prior_GRN.csv") -> 
     grn.to_csv(file_path)
     return grn
 
-def murine_nc(data_type: Literal['preprocessed', 'normalized', 'velocyto'] = 'preprocessed') -> AnnData:
+def murine_nc(data_type: Literal["preprocessed", "normalized", "velocyto"] = "preprocessed") -> AnnData:
     r"""Load mouse neural crest single-cell RNA-seq dataset (subset of Qiu et al.).
-
-    The dataset is available in three variants: 
-
-    - 'preprocessed' (default) 
-    - 'normalized' 
-    - 'velocyto'
 
     The gene regulatory network (GRN) is saved in `adata.uns['skeleton']`, 
     which is learned via pySCENIC.
@@ -70,9 +64,9 @@ def murine_nc(data_type: Literal['preprocessed', 'normalized', 'velocyto'] = 'pr
     data_type
         Data version to load. Options are: 
         
-        - 'preprocessed' (default), 
-        - 'normalized', 
-        - 'velocyto'.
+        - "preprocessed" (default),
+        - "normalized",
+        - "velocyto".
 
     Returns
     -------

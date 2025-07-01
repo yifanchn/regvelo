@@ -23,15 +23,17 @@ def abundance_test(
         DataFrame containing fate probabilities from the perturbed data.
     method
         Scoring method to use: 
-        - :obj:"t-statistics" (uses t-statistics) 
-        - :obj:"likelihood" (uses ROC AUC)
+
+        - "t-statistics" (uses t-statistics),
+        - "likelihood" (uses ROC AUC).
 
     Returns
     -------
     DataFrame containing: 
-    - :attr:"coefficient" (test statistic or ROC AUC score) 
-    - :attr:"p-value" (unadjusted p-value)
-    - :attr:"FDR adjusted p-value" (Benjamini-Hochberg corrected p-value)
+
+    - "coefficient" (test statistic or ROC AUC score), 
+    - "p-value" (unadjusted p-value),
+    - "FDR adjusted p-value" (Benjamini-Hochberg corrected p-value).
     """
     y = [1] * prob_raw.shape[0] + [0] * prob_pert.shape[0]
     X = pd.concat([prob_raw, prob_pert], axis=0)

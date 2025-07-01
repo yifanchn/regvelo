@@ -15,11 +15,18 @@ def cellfate_perturbation(
     Parameters
     ----------
     perturbed
-        Dictionary mapping TF candidates to their perturbed AnnData objects.
+        Dictionary mapping TF candidate names to their perturbed :class:`~anndata.AnnData` objects,
+        each containing precomputed fate probabilities under :attr:`obsm["lineages_fwd"]`.
     baseline
-        Annotated data matrix with precomputed fate probabilities (under key `'lineages_fwd'`).
+        Unperturbed :class:`~anndata.AnnData` object with precomputed fate probabilities 
+        under :attr:`obsm["lineages_fwd"]`.
     terminal_state
         One or more terminal states for which depletion scores are computed.
+    method
+        Scoring method to use:
+
+        - "t-statistics": uses t-statistics.
+        - "likelihood": uses ROC AUC score.
 
     Returns
     -------
