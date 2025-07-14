@@ -11,7 +11,8 @@ def in_silico_block_simulation(
         TF: str,
         effects: float = 0,
         cutoff: float = 1e-3,
-        customized_GRN: torch.Tensor = None
+        customized_GRN: torch.Tensor = None,
+        batch_size: int = None,
         ) -> tuple[AnnData, REGVELOVI]:
     r"""Perform an in silico transcription factor (TF) regulon knock-out by modifying the gene regulatory network (GRN)
     in a trained RegVelo model.
@@ -30,7 +31,9 @@ def in_silico_block_simulation(
         Threshold to determine which links in the GRN are considered active and should be muted.
     customized_GRN
         A custom perturbed GRN weight matrix to directly replace the original GRN.
-
+    batch_size
+        the batch size used for velocity and latent time generation.
+        
     Returns
     -------
     
@@ -50,6 +53,6 @@ def in_silico_block_simulation(
         customized_GRN =  customized_GRN.to(device)
         reg_vae_perturb.module.v_encoder.fc1.weight.data = customized_GRN
     
-    adata_target_perturb = reg_vae_perturb.add_regvelo_outputs_to_adata(adata = adata)
+    adata_target_perturb = reg_vae_perturb.add_regvelo_outputs_to_adata(adata = adata,batch_size = batch_size)
     
     return adata_target_perturb, reg_vae_perturb
