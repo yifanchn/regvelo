@@ -1,7 +1,4 @@
 
-from pathlib import Path
-from urllib.request import urlretrieve
-
 import numpy as np
 import pandas as pd
 from anndata import AnnData

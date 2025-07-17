@@ -1,9 +1,4 @@
 
-from pathlib import Path
-from typing import Optional, Union
-from urllib.request import urlretrieve
-
-import torch
 import numpy as np
 import pandas as pd
 from anndata import AnnData
