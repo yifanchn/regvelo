@@ -1,6 +1,5 @@
 # the folloing code is adapted from velovi
 import numpy as np
-import pandas as pd
 import scvelo as scv
 from anndata import AnnData
 from sklearn.preprocessing import MinMaxScaler
