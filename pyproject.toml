@@ -24,7 +24,6 @@ classifiers = [
   "Natural Language :: English",
 ]
 dependencies = [
-  "python >=3.10",
   "anndata >=0.10.8",
   "scanpy >=1.10.3",
   "scvelo >=0.3.2",
