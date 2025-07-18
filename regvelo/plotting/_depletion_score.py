@@ -1,8 +1,7 @@
 
-import torch
 import pandas as pd
 from anndata import AnnData
-from typing import Union, Sequence, Any, Optional
+from typing import Any
 
 import seaborn as sns
 import matplotlib.pyplot as plt

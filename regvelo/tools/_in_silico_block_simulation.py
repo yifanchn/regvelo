@@ -1,6 +1,4 @@
 import torch
-import pandas as pd
-import numpy as np
 from anndata import AnnData
 
 from .._model import REGVELOVI
