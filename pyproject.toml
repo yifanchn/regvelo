@@ -68,10 +68,6 @@ docs = [
   "sphinx_design >=0.3.0",
   "sphinx_autodoc_typehints >=1.10.3",
 ]
-tutorials = [
-  "petsc4py",
-  "slepc4py",
-]
 
 [tool.coverage.run]
 source = ["regvelo"]
