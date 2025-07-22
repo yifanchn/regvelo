@@ -40,8 +40,8 @@ dependencies = [
 ]
 
 [project.urls]
-homepage = "https://github.com/theislab/regvelo.git"
-issues = "https://github.com/theislab/regvelo/issues"
+documentation = "https://regvelo.readthedocs.io/"
+source = "https://github.com/theislab/regvelo"
 
 [project.optional-dependencies]
 dev = [
