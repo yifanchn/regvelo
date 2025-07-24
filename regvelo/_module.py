@@ -1,5 +1,5 @@
 """Main module."""
-from typing import Callable, Iterable, Literal, Optional, Any
+from typing import Callable, Iterable, Literal
 
 import numpy as np
 import torch
@@ -7,32 +7,13 @@ import torch.nn.functional as F
 from scvi.module.base import BaseModuleClass, LossOutput, auto_move_data
 from scvi.nn import Encoder, FCLayers
 from torch import nn as nn
-from torch.distributions import Categorical, Dirichlet, MixtureSameFamily, Normal
+from torch.distributions import Normal
 from torch.distributions import kl_divergence as kl
 import torchode as to
 from ._constants import REGISTRY_KEYS
-from torch import Tensor
 import torch.nn.utils.prune as prune
 
 torch.backends.cudnn.benchmark = True
-
-def _softplus_inverse(x: np.ndarray) -> np.ndarray:
-    r"""Computes the inverse of the softplus function element-wise.
-
-    Uses a stable approximation for large values to avoid numerical issues.
-
-    Parameters
-    ----------
-    x
-        Input array.
-
-    Returns
-    -------
-    Inverse softplus applied to each element in the input array.
-    """
-    x = torch.from_numpy(x)
-    x_inv = torch.where(x > 20, x, x.expm1().log()).numpy()
-    return x_inv
 
 class ThresholdPruning(prune.BasePruningMethod):
     r"""Custom pruning method that zeroes out tensor values below a given threshold.

@@ -1,22 +1,19 @@
 import logging
 import warnings
-from typing import Iterable, List, Literal, Optional, Sequence, Tuple, Union
+from typing import Iterable, Sequence
 
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn.functional as F
 from anndata import AnnData
 from joblib import Parallel, delayed
 from scipy.stats import ttest_ind
 from scvi.data import AnnDataManager
-from scvi.data.fields import (LayerField,ObsmField)
+from scvi.data.fields import (LayerField)
 from scvi.dataloaders import DataSplitter
 from scvi.model.base import BaseModelClass, UnsupervisedTrainingMixin, VAEMixin
 from scvi.train import TrainingPlan, TrainRunner
 from scvi.utils._docstrings import setup_anndata_dsp
-
-from scipy.spatial.distance import cdist
 
 from ._constants import REGISTRY_KEYS
 from ._module import VELOVAE
@@ -27,13 +24,26 @@ logger = logging.getLogger(__name__)
 ## network perturbation including regulon perturbation, TF-target perturbation, customs network motif perturbation
 
 def _softplus_inverse(x: np.ndarray) -> np.ndarray:
+    r"""Computes the inverse of the softplus function element-wise.
+
+    Uses a stable approximation for large values to avoid numerical issues.
+
+    Parameters
+    ----------
+    x
+        Input array.
+
+    Returns
+    -------
+    Inverse softplus applied to each element in the input array.
+    """
     x = torch.from_numpy(x)
     x_inv = torch.where(x > 20, x, x.expm1().log()).numpy()
     return x_inv
 
 ## TODO: modified the TrainingPlan and generate the new classes
 class ModifiedTrainingPlan(TrainingPlan):
-    """A TrainingPlan class modified to pass additional attributes to the module during training.
+    r"""A TrainingPlan class modified to pass additional attributes to the module during training.
 
     This class modifies the `training_step` method to set `current_epoch` and `global_step`
     on the module being trained, allowing the module to access training progress information.
