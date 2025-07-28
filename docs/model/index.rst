@@ -1,8 +1,8 @@
 
 .. _model-index:
 
-RegVelo model details
-~~~~~~~~~~~~~~~~~~~~~
+Model details
+~~~~~~~~~~~~~
 
 RegVelo leverages deep generative modeling to infer splicing kinetics, transcription rates, and latent cellular time while integrating GRN priors derived from multi-omics data or curated databases. 
 RegVelo incorporates cellular dynamic estimates by first encoding unspliced (*u*) and spliced RNA (*s*) readouts into posterior parameters of a low dimensional latent variable - the cell representation - with a neural network. 
@@ -31,8 +31,7 @@ After optimization, we define cell-gene-specific velocities as splicing velociti
 Overall, RegVelo allows sampling predicted readouts and velocities from the learned posterior distribution.
 
 
-Perturbation prediction
-~~~~~~~~~~~~~~~~~~~~~~~
+**Perturbation prediction**
 
 .. image:: https://github.com/theislab/regvelo/blob/main/docs/_static/img/perturbation_overview_fig.png?raw=true
    :alt: RegVelo perturbation introduction
