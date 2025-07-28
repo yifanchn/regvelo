@@ -74,6 +74,9 @@ tutorials = [
   "matplotlib",
 ]
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+
 [tool.coverage.run]
 source = ["regvelo"]
 omit = [
