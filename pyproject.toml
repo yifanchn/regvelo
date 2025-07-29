@@ -6,7 +6,7 @@ build-backend = "poetry.core.masonry.api"
 name = "regvelo"
 version = "0.2.0"
 description = "Estimation of RNA velocity with variational inference."
-readme = "README.md"
+readme = "README.rst"
 requires-python = ">=3.10"
 license = { text = "BSD-3-Clause" }
 authors = [
