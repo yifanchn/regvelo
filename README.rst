@@ -31,31 +31,31 @@ There are several options to intall regvelo:
 
 1. Install the latest release of `regvelo` from PyPI (TODO) via
 
-```bash
-pip install regvelo
-```
+.. code-block:: bash
+  pip install regvelo
+
 
 2. Install the latest development version via
 
-```bash
-pip install git+https://github.com/theislab/regvelo.git@main
-```
+.. code-block:: bash
+  pip install git+https://github.com/theislab/regvelo.git@main
+
 
 Citation
 --------
 
 If you find RegVelo useful for your research, please consider citing our work as:
 
-```
-@article{wang2024regvelo,
-  title={RegVelo: gene-regulatory-informed dynamics of single cells},
-  author={Wang, Weixu and Hu, Zhiyuan and Weiler, Philipp and Mayes, Sarah and Lange, Marius and Wang, Jingye and Xue, Zhengyuan and Sauka-Spengler, Tatjana and Theis, Fabian J},
-  journal={bioRxiv},
-  pages={2024--12},
-  year={2024},
-  publisher={Cold Spring Harbor Laboratory}
-}
-```
+.. code-block:: bibtex
+  @article{wang2024regvelo,
+    title={RegVelo: gene-regulatory-informed dynamics of single cells},
+    author={Wang, Weixu and Hu, Zhiyuan and Weiler, Philipp and Mayes, Sarah and Lange, Marius and Wang, Jingye and Xue, Zhengyuan and Sauka-Spengler, Tatjana and Theis, Fabian J},
+    journal={bioRxiv},
+    pages={2024--12},
+    year={2024},
+    publisher={Cold Spring Harbor Laboratory}
+  }
+
 
 .. _RegVelo manuscript: https://www.biorxiv.org/content/10.1101/2024.12.11.627935v1
 .. _Lange et al. (2022): https://www.nature.com/articles/s41592-021-01346-6
