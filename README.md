@@ -9,7 +9,7 @@ Feel free to open an [issue](https://github.com/theislab/regvelo/issues/new) if 
 
 RegVelo's key applications
 --------------------------
-- Estimzte RNA velocity governed by gene regulation.
+- Estimate RNA velocity governed by gene regulation.
 - Infer latent time to indicate the cellular differentiation process.
 - Estimate intrinsic and extrinsic velocity uncertainty [Gayoso et al. (2024)](https://www.nature.com/articles/s41592-023-01994-w).
 - Estimate regulon perturbation effects via CellRank framework ([Lange et al. (2022)](https://www.nature.com/articles/s41592-021-01346-6), [Weiler et al. (2024)](https://www.nature.com/articles/s41592-024-02303-9)).
