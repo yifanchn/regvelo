@@ -2,7 +2,43 @@
 
 <img src="https://github.com/theislab/regvelo/blob/main/docs/_static/img/overview_fig.png?raw=true" alt="RegVelo" width="600" />
 
-**RegVelo** is an end-to-end framework to infer regulatory cellular dynamics through coupled splicing dynamics. See our [RegVelo manuscript](https://www.biorxiv.org/content/10.1101/2024.12.11.627935v1) to learn more. If you use our tool in your own work, please cite it as
+**RegVelo** is an end-to-end framework to infer regulatory cellular dynamics through coupled splicing dynamics. See our [RegVelo manuscript](https://www.biorxiv.org/content/10.1101/2024.12.11.627935v1) and [documentation](https://regvelo.readthedocs.io/en/latest/index.html) to learn more. 
+
+Feel free to open an `issue`_ if you encounter a bug, need our help or just want to make a comment/suggestion.
+
+
+## RegVelo's key applications
+- Estimzte RNA velocity governed by gene regulation.
+- Infer latent time to indicate the cellular differentiation process.
+- Estimate intrinsic and extrinsic velocity uncertainty :cite:p:`gayoso2024deep`.
+- Estimate regulon perturbation effects via CellRank framework :cite:p:`lange2022cellrank, weiler2024cellrank`.
+
+
+## Getting started
+We have [tutorials](https://regvelo.readthedocs.io/en/latest/tutorials/index.html) to help you get started.
+
+
+## Installation
+
+You need to have Python 3.10 or newer installed on your system. 
+
+There are several options to intall regvelo:
+
+1. Install the latest release of `regvelo` from PyPI (TODO) via
+
+```bash
+pip install regvelo
+```
+
+2. Install the latest development version via
+
+```bash
+pip install git+https://github.com/theislab/regvelo.git@main
+```
+
+## Citation
+
+If you find RegVelo useful for your research, please consider citing our work as:
 
 ```
 @article{wang2024regvelo,
@@ -13,23 +49,4 @@
   year={2024},
   publisher={Cold Spring Harbor Laboratory}
 }
-```
-## Getting started
-Please refer to the [Tutorials](https://regvelo.readthedocs.io/en/latest/index.html)
-
-## Installation
-
-You need to have Python 3.10 or newer installed on your system. If you don't have
-Python installed, we recommend installing [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
-
-To create and activate a new environment
-
-```bash
-conda create -n regvelo-py310 python=3.10 --yes && conda activate regvelo-py310
-```
-
-Next, install the package with
-
-```bash
-pip install git+https://github.com/theislab/regvelo.git@main --no-cache-dir --force-reinstall
 ```
