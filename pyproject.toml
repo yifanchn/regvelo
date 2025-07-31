@@ -2,86 +2,80 @@
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.poetry]
-authors = ["Weixu Wang <weixu.wang@helmholtz-munich.de>"]
+[project]
+name = "regvelo"
+version = "0.2.0"
+description = "Estimation of RNA velocity with variational inference."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "BSD-3-Clause" }
+authors = [
+  { name = "Weixu Wang", email = "weixu.wang@helmholtz-munich.de" }
+]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Science/Research",
-  "Natural Language :: English",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Operating System :: MacOS :: MacOS X",
-  "Operating System :: Microsoft :: Windows",
-  "Operating System :: POSIX :: Linux",
   "Topic :: Scientific/Engineering :: Bio-Informatics",
+  "License :: OSI Approved :: BSD License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Natural Language :: English",
 ]
-description = "Estimation of RNA velocity with variational inference."
-documentation = "https://scvi-tools.org"
-homepage = "https://github.com/theislab/RegVelo/"
-license = "BSD-3-Clause"
-name = "regvelo"
-packages = [
-  {include = "regvelo"},
+dependencies = [
+  "anndata >=0.10.8",
+  "scanpy >=1.10.3",
+  "scvelo >=0.3.2",
+  "scvi-tools >=1.0.0,<1.2.1",
+  "scikit-learn >=0.21.2",
+  "velovi >=0.3.1",
+  "torchode >=0.1.6",
+  "cellrank >=2.0.0",
+  "matplotlib >=3.7.3",
+  "pandas >=2.0.3",
+  "seaborn >=0.13.2",
+  "numpy >=1.25.2",
+  "scipy >=1.11.1,<1.16.0",
+  "torch <2.6.0",
 ]
-readme = "README.md"
-version = "0.2.0"
 
-[tool.poetry.dependencies]
-anndata = ">=0.10.8"
-black = {version = ">=20.8b1", optional = true}
-codecov = {version = ">=2.0.8", optional = true}
-ruff = {version = "*", optional = true}
-importlib-metadata = {version = "^1.0", python = "<3.8"}
-ipython = {version = ">=7.1.1", optional = true}
-jupyter = {version = ">=1.0", optional = true}
-pre-commit = {version = ">=2.7.1", optional = true}
-sphinx-book-theme = {version = ">=1.0.0", optional = true}
-myst-nb = {version = "*", optional = true}
-sphinx-copybutton = {version = "*", optional = true}
-sphinxcontrib-bibtex = {version = "2.6.3", optional = true}
-ipykernel = {version = "*", optional = true}
-pytest = {version = ">=4.4", optional = true}
-pytest-cov = {version = "*", optional = true}
-python = ">=3.9,<4.0"
-python-igraph = {version = "*", optional = true}
-scanpy = {version = ">=1.10.3", optional = true}
-scanpydoc = {version = ">=0.5", optional = true}
-scvelo = ">=0.3.2"
-scvi-tools = ">=1.0.0,<1.2.1"
-scikit-learn = ">=0.21.2"
-velovi = ">=0.3.1"
-torchode = ">=0.1.6"
-cellrank = ">=2.0.0"
-matplotlib = ">=3.7.3"
-sphinx = {version = ">=4.1", optional = true}
-sphinx-autodoc-typehints = {version = "*", optional = true}
-torch = "<2.6.0"
-sphinx_design = ">=0.3.0"
-furo = ">=2022.09.29"
-sphinx_autodoc_typehints = ">=1.10.3"
+[project.urls]
+documentation = "https://regvelo.readthedocs.io/"
+source = "https://github.com/theislab/regvelo"
 
-
-[tool.poetry.extras]
-dev = ["black", "pytest", "pytest-cov", "ruff", "codecov", "scanpy", "loompy", "jupyter", "pre-commit"]
+[project.optional-dependencies]
+dev = [
+  "black >=20.8b1",
+  "pytest >=4.4",
+  "pytest-cov",
+  "ruff",
+  "codecov >=2.0.8",
+  "scanpy",
+  "loompy",
+  "jupyter",
+  "pre-commit >=2.7.1",
+]
 docs = [
-  "sphinx",
-  "furo",
-  "scanpydoc",
-  "ipython",
+  "sphinx >=4.1",
+  "furo >=2022.09.29",
+  "scanpydoc >=0.5",
+  "ipython >=7.1.1",
   "myst-nb",
-  "sphinx-book-theme",
+  "sphinx-book-theme >=1.0.0",
   "sphinx-copybutton",
-  "sphinxcontrib-bibtex",
+  "sphinxcontrib-bibtex ==2.6.3",
   "ipykernel",
-  "ipython",
-  "sphinx_design",
-  "sphinx_autodoc_typehints",
+  "sphinx_design >=0.3.0",
+  "sphinx_autodoc_typehints >=1.10.3",
 ]
-tutorials = ["scanpy"]
+tutorials = [
+  "scanpy",
+  "matplotlib",
+]
 
-[tool.poetry.dev-dependencies]
-
+[tool.setuptools]
+package-dir = {"" = "src"}
 
 [tool.coverage.run]
 source = ["regvelo"]
@@ -92,7 +86,6 @@ omit = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 xfail_strict = true
-
 
 [tool.black]
 include = '\.pyi?$'

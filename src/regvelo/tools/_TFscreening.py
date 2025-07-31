@@ -2,13 +2,12 @@ import torch
 import pandas as pd
 import numpy as np
 
-import cellrank as cr
 from anndata import AnnData
 from scvelo import logging as logg
 import os, shutil
 
 from .._model import REGVELOVI
-from ._utils import split_elements, get_list_name
+from ._utils import get_list_name
 from ._TFScanning_func import TFScanning_func
 
 

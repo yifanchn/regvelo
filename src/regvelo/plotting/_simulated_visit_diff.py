@@ -1,9 +1,8 @@
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 import scanpy as sc
 from anndata import AnnData
-from typing import Sequence, Any
+from typing import Any
 
 from ._utils import delta_to_probability, smooth_score
 

@@ -35,6 +35,7 @@
 :titlesonly: true
 
 about/index
+model/index
 api/index
 tutorials/index
 release_notes/index
