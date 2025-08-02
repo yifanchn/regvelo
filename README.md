@@ -22,7 +22,7 @@ We have [tutorials](https://regvelo.readthedocs.io/en/latest/tutorials/index.htm
 
 ## Installation
 
-You need to have Python 3.10 or newer installed on your system. 
+You need to have Python 3.10 or newer installed on your system. Since `regvelo` is not on PyPI yet, please use option-2 for now to install.
 
 There are several options to intall regvelo:
 
