@@ -5,18 +5,17 @@ import logging
 from rich.console import Console
 from rich.logging import RichHandler
 
-from regvelo import datasets
-from regvelo import metrics as mt
-from regvelo import tools as tl
-from regvelo import plotting as pl
-from regvelo import preprocessing as pp
+from . import datasets
+from . import metrics as mt
+from . import tools as tl
+from . import plotting as pl
+from . import preprocessing as pp
 
 from ._constants import REGISTRY_KEYS
 from ._model import REGVELOVI, VELOVAE
 from .ModelComparison import ModelComparison
 
 import sys  # isort:skip
-
 sys.modules.update({
     f"{__name__}.metrics": mt,
     f"{__name__}.tools": tl,
@@ -24,8 +23,7 @@ sys.modules.update({
     f"{__name__}.preprocessing": pp
 })
 
-# https://github.com/python-poetry/poetry/pull/2366#issuecomment-652418094
-# https://github.com/python-poetry/poetry/issues/144#issuecomment-623927302
+
 try:
     import importlib.metadata as importlib_metadata
 except ModuleNotFoundError:
