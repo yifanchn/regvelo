@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "regvelo"
-version = "0.2.2"
+version = "0.2.3"
 description = "Estimation of RNA velocity with variational inference."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -27,7 +27,7 @@ dependencies = [
   "anndata >=0.10.8",
   "scanpy >=1.10.3",
   "scvelo >=0.3.2",
-  "scvi-tools >=1.0.0,<1.2.1",
+  "scvi-tools >=1.2.0",
   "scikit-learn >=0.21.2",
   "velovi >=0.3.1",
   "torchode >=0.1.6",
@@ -38,7 +38,7 @@ dependencies = [
   "numpy >=1.25.2",
   "scipy >=1.11.1,<1.16.0",
   "torch <2.6.0",
-  "rich >=13.0", 
+  "rich >=10.0.0",
 ]
 
 [project.urls]
