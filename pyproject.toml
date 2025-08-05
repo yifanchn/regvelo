@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=61", "setuptools-scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "regvelo"
-version = "0.2.4"
+dynamic = ["version"]
 description = "Estimation of RNA velocity with variational inference."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -41,10 +41,6 @@ dependencies = [
   "rich >=10.0.0",
 ]
 
-[project.urls]
-documentation = "https://regvelo.readthedocs.io/"
-source = "https://github.com/theislab/regvelo"
-
 [project.optional-dependencies]
 dev = [
   "black >=20.8b1",
@@ -75,6 +71,10 @@ tutorials = [
   "matplotlib",
 ]
 
+[project.urls]
+documentation = "https://regvelo.readthedocs.io/"
+source = "https://github.com/theislab/regvelo"
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 include-package-data = true
@@ -82,15 +82,9 @@ include-package-data = true
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.coverage.run]
-source = ["regvelo"]
-omit = [
-    "**/test_*.py",
-]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-xfail_strict = true
+[tool.setuptools_scm]
+version_scheme = "release-branch-semver"
+local_scheme = "no-local-version"
 
 [tool.black]
 include = '\.pyi?$'
@@ -114,7 +108,7 @@ exclude = '''
 [tool.ruff]
 src = ["."]
 line-length = 119
-target-version = "py38"
+target-version = "py310"
 select = [
     "F",  # Errors detected by Pyflakes
     "E",  # Error detected by Pycodestyle
@@ -163,6 +157,18 @@ ignore = [
 "tests/*" = ["D"]
 "*/__init__.py" = ["F401"]
 "regvelo/__init__.py" = ["I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+xfail_strict = true
+
+[tool.coverage.run]
+branch = true
+parallel = true
+source = ["src/"]
+omit = [
+    "*/__init__.py",
+]
 
 [tool.jupytext]
 formats = "ipynb,md"
