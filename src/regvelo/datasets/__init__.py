@@ -6,6 +6,7 @@ from ._datasets import (
     murine_nc,
     human_limb,
     hindbrain,
+    schwann,
 )
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "murine_nc",
     "human_limb",
     "hindbrain",
+    "schwann",
 ]

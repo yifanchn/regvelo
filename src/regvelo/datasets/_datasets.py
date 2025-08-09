@@ -14,6 +14,8 @@ url_adata_murine_velocyto = "https://drive.usercontent.google.com/download?id=18
 url_adata_humanlimb = "https://drive.usercontent.google.com/download?id=17ZaqWx91w--iTtwWMR-SCh6wZO3bzMtM&export=download&authuser=0&confirm=t&uuid=7bdbe7b7-380d-4075-bbe2-1bb65fc0b0a2&at=AN8xHoor6c_hR8_eEd7EENc6dV9M:1750766911809"
 url_adata_hindbrain = "https://drive.usercontent.google.com/download?id=1g0TE-Fx1DxqLmZe5Hp1F6hYWXq4gpa6N&export=download&authuser=1&confirm=t&uuid=1b60b506-43df-4632-a5a6-f4b1f1780a5f&at=AN8xHopDbZ1_ZR20eBBMGi33rse-:1754605312727"
 url_adata_hindbrain_processed = "https://drive.usercontent.google.com/download?id=1F2A3kUcHmYJR3v61u6Py3Bmo2Zxl4eUC&export=download&authuser=1&confirm=t&uuid=577ac34b-4fb7-49b9-91e9-9868a9e0f9e4&at=AN8xHorPStlDZePwNziyUuAJmZSQ:1754605238549"
+url_adata_schwann = "https://drive.usercontent.google.com/download?id=1ZpG1gz0jjPNuXc_bsz3XInVtHooHU02M&export=download&authuser=1&confirm=t&uuid=eeed9d4b-c938-40c9-af24-b248fd29e161&at=AN8xHoqO3RF2oroUCmn7jFURR16T:1754642525195"
+
 
 
 def zebrafish_nc(file_path: str | Path = "data/zebrafish_nc/adata_zebrafish_preprocessed.h5ad") -> AnnData:
@@ -130,4 +132,21 @@ def hindbrain(data_type: Literal["original", "preprocessed"] = "preprocessed") -
     elif data_type == "preprocessed":
         adata = read(file_path[1], backup_url=url_adata_hindbrain_processed, sparse=True, cache=True)
 
+    return adata
+
+
+def schwann(file_path: str | Path = "data/schwann/adata_schwann_preprocessed.h5ad") -> AnnData:
+    """Load mouse Schwann cell scRNA-seq dataset.
+
+    Parameters
+    ----------
+    file_path
+        Path to local dataset. Will download from remote URL if not found.
+    
+    Returns
+    -------
+    Annotated data object of mouse Schwann cells.
+    """
+
+    adata = read(file_path, backup_url=url_adata_schwann, sparse=True, cache=True)
     return adata
