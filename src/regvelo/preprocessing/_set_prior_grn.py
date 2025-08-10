@@ -47,7 +47,6 @@ def set_prior_grn(
     # Compute correlation matrix based on gene expression layer "Ms"
     gex = adata.layers["Ms"]
     correlation = 1 - cdist(gex.T, gex.T, metric="correlation")
-    #correlation = torch.tensor(correlation).float()
     correlation = correlation[np.ix_(target_mask, regulator_mask)]
     correlation[np.isnan(correlation)] = 0
 

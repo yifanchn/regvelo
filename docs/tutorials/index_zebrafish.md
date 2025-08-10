@@ -1,4 +1,4 @@
-# Zebrafish Neural Crest Development
+# Zebrafish neural crest development
 
 ```{toctree}
 :maxdepth: 1
