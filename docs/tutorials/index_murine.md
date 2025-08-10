@@ -1,4 +1,4 @@
-# Murine Neural Crest Development
+# Murine neural crest development
 
 ```{toctree}
 :maxdepth: 1
