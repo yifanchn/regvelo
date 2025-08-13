@@ -13,4 +13,6 @@
     zebrafish_grn
     murine_nc
     human_limb
+    hindbrain
+    schwann
 ```
