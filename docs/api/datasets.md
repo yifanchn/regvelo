@@ -14,5 +14,6 @@
     murine_nc
     human_limb
     hindbrain
+    hindbrain_grn
     schwann
 ```
