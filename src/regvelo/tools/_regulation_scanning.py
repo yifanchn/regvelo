@@ -19,6 +19,7 @@ def regulation_scanning(
     target: list[str],
     effect: float = 1e-3,
     method: Literal["likelihood", "t-statistics"] = "likelihood",
+    n_samples: float = 50,
     **kwargs: Any,
 ) -> dict[str, list[str] | list[pd.Series]]:
     r"""Perform transcription factor (TF) scanning and perturbation analysis on a gene regulatory network.
@@ -55,7 +56,7 @@ def regulation_scanning(
     """
     # Load model and add outputs
     reg_vae = REGVELOVI.load(model, adata)
-    adata = reg_vae.add_regvelo_outputs_to_adata(adata=adata, n_samples=50)
+    adata = reg_vae.add_regvelo_outputs_to_adata(adata=adata, n_samples=n_samples)
 
     # Build kernel
     vk = cr.kernels.VelocityKernel(adata).compute_transition_matrix()
@@ -87,7 +88,7 @@ def regulation_scanning(
     for regulator in TF:
         for gene in target:
             adata_target = in_silico_block_regulation_simulation(
-                model, adata, regulator, gene, effects=effect
+                model, adata, regulator, gene, effects=effect,n_samples=n_samples
             )
 
             # Perturb kernels
