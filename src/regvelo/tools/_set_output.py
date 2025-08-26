@@ -1,7 +1,7 @@
 import numpy as np
-
 from anndata import AnnData
-from typing import Any
+
+from .._model import REGVELOVI
 
 
 # Code mostly taken from veloVI reproducibility repo
@@ -10,34 +10,35 @@ from typing import Any
 
 def set_output(
     adata: AnnData, 
-    vae: Any, 
+    vae: REGVELOVI, 
     n_samples: int = 30, 
     batch_size: int = None
     ) -> None:
-    r"""Add inference results to adata.
+    r"""Add inference results from a trained RegVelo model to ``adata``.
 
     Parameters
     ----------
     adata
         Annotated data matrix.
     vae
-        RegVelo model
+        Trained :class:`REGVELOVI` model.
     n_samples
         Number of posterior samples to use for estimation.
     batch_size
-        Minibatch size for data loading into model. If None, uses `scvi.settings.batch_size`.
+        Minibatch size for data loading into model. If None, uses ``scvi.settings.batch_size``.
 
     Returns
     -------
-    Nothing, just updates ``adata`` with the following fields:
+    None 
+        Updates ``adata`` with the following fields:
     
-    - ``adata.layers["velocity"]``: Estimated velocity.
-    - ``adata.layers["latent_time_velovi"]``: Estimated latent time.
-    - ``adata.var["fit_alpha"]``: Estimated alpha rate.
-    - ``adata.var["fit_beta"]``: Estimated beta rate.
-    - ``adata.var["fit_gamma"]``: Estimated gamma rate.
-    - ``adata.layers["fit_t"]``: Estimated latent time scaled to the maximum value
-    - ``adata.var["fit_scaling"]``: Scaling factor for the latent time.
+        - ``adata.layers["velocity"]``: Estimated velocity.
+        - ``adata.layers["latent_time_velovi"]``: Estimated latent time.
+        - ``adata.var["fit_alpha"]``: Estimated alpha rate.
+        - ``adata.var["fit_beta"]``: Estimated beta rate.
+        - ``adata.var["fit_gamma"]``: Estimated gamma rate.
+        - ``adata.layers["fit_t"]``: Estimated latent time scaled to the maximum value
+        - ``adata.var["fit_scaling"]``: Scaling factor for the latent time.
     """
     
     latent_time = vae.get_latent_time(n_samples=n_samples, batch_size=batch_size)
