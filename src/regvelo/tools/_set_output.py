@@ -29,16 +29,15 @@ def set_output(
 
     Returns
     -------
-    None 
-        Updates ``adata`` with the following fields:
+    Nothing, just updates ``adata`` with the following fields:
     
-        - ``adata.layers["velocity"]``: Estimated velocity.
-        - ``adata.layers["latent_time_velovi"]``: Estimated latent time.
-        - ``adata.var["fit_alpha"]``: Estimated alpha rate.
-        - ``adata.var["fit_beta"]``: Estimated beta rate.
-        - ``adata.var["fit_gamma"]``: Estimated gamma rate.
-        - ``adata.layers["fit_t"]``: Estimated latent time scaled to the maximum value
-        - ``adata.var["fit_scaling"]``: Scaling factor for the latent time.
+    - ``adata.layers["velocity"]``: Estimated velocity.
+    - ``adata.layers["latent_time_velovi"]``: Estimated latent time.
+    - ``adata.var["fit_alpha"]``: Estimated alpha rate.
+    - ``adata.var["fit_beta"]``: Estimated beta rate.
+    - ``adata.var["fit_gamma"]``: Estimated gamma rate.
+    - ``adata.layers["fit_t"]``: Estimated latent time scaled to the maximum value
+    - ``adata.var["fit_scaling"]``: Scaling factor for the latent time.
     """
     
     latent_time = vae.get_latent_time(n_samples=n_samples, batch_size=batch_size)
