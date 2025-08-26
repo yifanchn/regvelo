@@ -9,7 +9,7 @@ def in_silico_block_regulation_simulation(
     adata: AnnData,
     regulator: str,
     target: str,
-    n_samples: int = 100,
+    n_samples: int = 50,
     effects: float = 0.0,
 ) -> AnnData:
     r"""Simulate in-silico blocking of a specific regulation between a regulator and a target gene.
