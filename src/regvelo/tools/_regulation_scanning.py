@@ -43,6 +43,8 @@ def regulation_scanning(
         Value to assign when blocking a regulation (default: ``1e-3``).
     method
         Method to use in :func:`abundance_test` (``"likelihood"`` or ``"t-statistics"``).
+    **kwargs
+        Additional keyboard parameters passed on to :func:`in_silico_block_regulation_simulation`.
 
     Returns
     -------
@@ -53,18 +55,23 @@ def regulation_scanning(
         - ``"coefficient"``: perturbation coefficients.
         - ``"pvalue"``: FDR-adjusted p-values.
     """
+
+    n_samples = kwargs.get("n_samples", 30)
+
     # Load model and add outputs
     reg_vae = REGVELOVI.load(model, adata)
-    adata = reg_vae.add_regvelo_outputs_to_adata(adata=adata, n_samples=50)
+    adata = reg_vae.add_regvelo_outputs_to_adata(adata=adata, n_samples=n_samples)
 
+    # Curate all targets of specific TF
     # Build kernel
     vk = cr.kernels.VelocityKernel(adata).compute_transition_matrix()
     ck = cr.kernels.ConnectivityKernel(adata).compute_transition_matrix()
     g = cr.estimators.GPCCA(0.8 * vk + 0.2 * ck)
 
-    # Compute macrostates and fate probabilities
+    # Evaluate the fate prob on original space
     g.compute_macrostates(n_states=n_states, n_cells=30, cluster_key=cluster_label)
 
+    # Predict cell fate probabilities
     if terminal_states is None:
         g.predict_terminal_states()
         terminal_states = g.terminal_states.cat.categories.tolist()
@@ -87,15 +94,15 @@ def regulation_scanning(
     for regulator in TF:
         for gene in target:
             adata_target = in_silico_block_regulation_simulation(
-                model, adata, regulator, gene, effects=effect
+                model, adata, regulator, gene, n_samples=n_samples, effects=effect
             )
 
-            # Perturb kernels
+            # Perturb the regulations
             vk = cr.kernels.VelocityKernel(adata_target).compute_transition_matrix()
             ck = cr.kernels.ConnectivityKernel(adata_target).compute_transition_matrix()
             g2 = cr.estimators.GPCCA(0.8 * vk + 0.2 * ck)
 
-            # Evaluate the fate prob on original space
+            # Evaluate the fate probabilities on original space
             ct_indices = {
                 ct: adata.obs["term_states_fwd"][adata.obs["term_states_fwd"] == ct].index.tolist()
                 for ct in terminal_states
@@ -126,7 +133,7 @@ def regulation_scanning(
             coef.append(test_result.loc[:, "coefficient"])
             pvalue.append(test_result.loc[:, "FDR adjusted p-value"])
 
-            logg.info("Done! " + fr"{regulator} -> {gene}")
+            logg.info("Finished " + fr"{regulator} -> {gene}")
             links.append(fr"$\text{{{regulator}}} \to \text{{{gene}}}$")
 
             # Reset
