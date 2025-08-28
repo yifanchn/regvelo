@@ -48,12 +48,11 @@ def regulation_scanning(
 
     Returns
     -------
-    dict of lists
-        Dictionary with keys:
-        
-        - ``"links"``: formatted regulator -> target strings.
-        - ``"coefficient"``: perturbation coefficients.
-        - ``"pvalue"``: FDR-adjusted p-values.
+    Dictionary with keys:
+    
+    - ``"links"``: formatted regulator -> target strings.
+    - ``"coefficient"``: perturbation coefficients.
+    - ``"pvalue"``: FDR-adjusted p-values.
     """
 
     n_samples = kwargs.get("n_samples", 30)
