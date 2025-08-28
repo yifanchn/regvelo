@@ -29,8 +29,7 @@ def set_output(
 
     Returns
     -------
-    None 
-        Updates ``adata`` with the following fields:
+    Nothing, just updates ``adata`` with the following fields:
     
         - ``adata.layers["velocity"]``: Estimated velocity.
         - ``adata.layers["latent_time_velovi"]``: Estimated latent time.
